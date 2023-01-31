@@ -35,24 +35,12 @@ const IndexPage = () => {
     })
   };
 
-  const handleLogout = async () => {
-    try {
-      await window.ethereum.request({ method: 'eth_requestAccounts', params: [ethAddress] });
-      setEthAddress(null);
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
   return (
     <div>
       {error && <div>{error}</div>}
       {ethAddress ? (
         <div>
           Logged in with Ethereum address: {ethAddress}
-          <button disabled={isLoading} onClick={handleLogout}>
-            Logout
-          </button>
         </div>
       ) : (
         <div>
