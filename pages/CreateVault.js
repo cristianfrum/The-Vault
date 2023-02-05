@@ -1,47 +1,73 @@
 import React from 'react'
 import Link from 'next/link';
+import abi from '../utils/TheVault.json';
+import { ethers } from 'ethers';
 
 const CreateVault = () => {
-  const [inputValue, setInputValue] = React.useState('');
+  const [walletName, setWalletName] = React.useState('');
+  const contractAddress = "0xbDc6eB6465904Eba59C194Ab8124B1D03Fe20763";
+  const contractABI = abi.abi;
 
-  const setWalletName = (event) => {
-    setInputValue(event.target.value);
+  const initializeWalletName = (event) => {
+    setWalletName(event.target.value);
+    console.log("input: " + walletName);
   };
 
-  const createTheVault = async () => {
-
-  }
-
-  const buyCoffee = async () => {
+  const createTheWallet = async () => {
     try {
       const { ethereum } = window;
 
       if (ethereum) {
         const provider = new ethers.providers.Web3Provider(ethereum, "any");
         const signer = provider.getSigner();
-        const buyMeACoffee = new ethers.Contract(
+        const theVault = new ethers.Contract(
           contractAddress,
           contractABI,
           signer
         );
 
-        console.log("buying coffee..")
-        const coffeeTxn = await buyMeACoffee.buyCoffee(
-          name ? name : "anon",
-          message ? message : "Enjoy your coffee!",
-          { value: ethers.utils.parseEther("0.001") }
-        );
+        console.log("creating the wallet..");
+        const vault = await theVault.initializeWallet(walletName, {
+          value: ethers.utils.parseEther('0.001'),
+          gasPrice: ethers.utils.parseUnits('20', 'gwei'),
+        });
 
-        await coffeeTxn.wait();
+        await vault.wait();
 
-        console.log("mined ", coffeeTxn.hash);
+        console.log("mined ", vault.hash);
 
-        console.log("coffee purchased!");
+        console.log("Wallet created!");
 
         // Clear the form fields.
-        setName("");
-        setMessage("");
+        // setName("");
+        // setMessage("");
       }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  const getWalletId = async () => {
+    try {
+      const { ethereum } = window;
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const theVault = new ethers.Contract(
+          contractAddress,
+          contractABI,
+          signer
+        );
+
+        console.log("fetching info from the blockchain..");
+        const info = await theVault.getWalletId("Wallet4");
+        console.log("fetched!");
+        console.log(info);
+        //  setMemos(memos);
+      } else {
+        console.log("Metamask is not connected");
+      }
+
     } catch (error) {
       console.log(error);
     }
@@ -50,8 +76,9 @@ const CreateVault = () => {
   return (
     <div>
       <h1>Welcome to the Vault</h1>
-      <input type="text" value={inputValue} onChange={setWalletName} />
-      <button>Create the vault</button>
+      <input type="text" placeholder="Type wallet's name..." value={walletName} onChange={initializeWalletName} />
+      <button onClick={createTheWallet}>Create the wallet</button>
+      <button onClick={getWalletId}>Get wallet's id</button>
       <Link href="/">
         <button>Go to the home page</button>
       </Link>

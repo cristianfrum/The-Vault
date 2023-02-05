@@ -2,7 +2,7 @@ import { useRouter } from 'next/router'
 
 const HomePage = ({ ethAddress }) => {
   const router = useRouter();
-  const mySecret = process.env.contractAddress;
+  const mySecret = process.env.ADDRESS;
 
   const createVault = () => {
     console.log(123);
