@@ -6,7 +6,7 @@ import { ethers } from 'ethers';
 const CreateVault = () => {
   const [walletName, setWalletName] = React.useState('');
   const [walletBalance, setWalletBalance] = React.useState('');
-  const contractAddress = "0x3e85bb1e7fd4A8e808151836bA5303A82a26eceF";
+  const contractAddress = "0x3e93970cF861895521d9Dde16697f76421d313Da";
   const contractABI = abi.abi;
   const [membersAddresses, setMembersAddresses] = React.useState([]);
   const [membersFirstNames, setMembersFirstNames] = React.useState([]);
@@ -83,6 +83,58 @@ const CreateVault = () => {
     }
   };
 
+  const getWalletMembers = async () => {
+    try {
+      const { ethereum } = window;
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const theVault = new ethers.Contract(
+          contractAddress,
+          contractABI,
+          signer
+        );
+
+        console.log("fetching info from the blockchain..");
+        const info = await theVault.getWalletMembers(walletName);
+        console.log("fetched!");
+        console.log(info);
+        //  setMemos(memos);
+      } else {
+        console.log("Metamask is not connected");
+      }
+
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const getWalletMemberCounter = async () => {
+    try {
+      const { ethereum } = window;
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const theVault = new ethers.Contract(
+          contractAddress,
+          contractABI,
+          signer
+        );
+
+        console.log("fetching info from the blockchain..");
+        const info = await theVault.getWalletMemberCounter(walletName);
+        console.log("fetched!");
+        console.log(info);
+        //  setMemos(memos);
+      } else {
+        console.log("Metamask is not connected");
+      }
+
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const getWalletBalance = async () => {
     try {
       const { ethereum } = window;
@@ -112,6 +164,12 @@ const CreateVault = () => {
     setMembersLastNames([...membersLastNames, '']);
   };
 
+  const handleRemoveInput = () => {
+    setMembersAddresses(membersAddresses.slice(0, -1));
+    setMembersFirstNames(membersFirstNames.slice(0, -1));
+    setMembersLastNames(membersLastNames.slice(0, -1));
+  };
+
   const handleChangeAddresses = (e, index) => {
     const values = [...membersAddresses];
     values[index] = e.target.value;
@@ -135,10 +193,11 @@ const CreateVault = () => {
       <h1>Welcome to the Vault</h1>
       <input type="text" placeholder="Type wallet's name..." value={walletName} onChange={initializeWalletName} />
       <button onClick={handleAddInput}>Add New Member</button>
+      <button onClick={handleRemoveInput}>Remove Member</button>
       <div style={{ display: "flex", flexDirection: "row" }}>
         <div style={{ display: "flex", flexDirection: "column" }}>
           {membersAddresses.map((input, index) => (
-            <input type="text" placeholder="Type user' address..."
+            <input key={index} type="text" placeholder="Type user' address..."
               value={input.value}
               onChange={e => handleChangeAddresses(e, index)}
             />
@@ -146,7 +205,7 @@ const CreateVault = () => {
         </div>
         <div style={{ display: "flex", flexDirection: "column" }}>
           {membersFirstNames.map((input, index) => (
-            <input type="text" placeholder="Type user' first name..."
+            <input key={index} type="text" placeholder="Type user' first name..."
               value={input.value}
               onChange={e => handleChangeFirstNames(e, index)}
             />
@@ -154,7 +213,7 @@ const CreateVault = () => {
         </div>
         <div style={{ display: "flex", flexDirection: "column" }}>
           {membersLastNames.map((input, index) => (
-            <input type="text" placeholder="Type users' last name..."
+            <input key={index} type="text" placeholder="Type users' last name..."
               value={input.value}
               onChange={e => handleChangeLastNames(e, index)}
             />
@@ -167,6 +226,12 @@ const CreateVault = () => {
       </div>
       <div>
         <button onClick={getWalletId}>Get wallet's id</button>
+      </div>
+      <div>
+        <button onClick={getWalletMembers}>Get wallet's members</button>
+      </div>
+      <div>
+        <button onClick={getWalletMemberCounter}>Get wallet's member counter</button>
       </div>
       <div>
         <button onClick={getWalletBalance}>Get wallet's balance</button>
