@@ -3,14 +3,14 @@ import Link from 'next/link';
 import abi from '../utils/TheVault.json';
 import { ethers } from 'ethers';
 
-const CreateVault = () => {
+const CreateVault = ({ ethAddress }) => {
   const [walletName, setWalletName] = React.useState('');
   const [walletBalance, setWalletBalance] = React.useState('');
-  const contractAddress = "0x3e93970cF861895521d9Dde16697f76421d313Da";
+  const contractAddress = "0x68789207210a603cc79132da7B5bd477474b2ba1";
   const contractABI = abi.abi;
-  const [membersAddresses, setMembersAddresses] = React.useState([]);
-  const [membersFirstNames, setMembersFirstNames] = React.useState([]);
-  const [membersLastNames, setMembersLastNames] = React.useState([]);
+  const [membersAddresses, setMembersAddresses] = React.useState([ethAddress]);
+  const [membersFirstNames, setMembersFirstNames] = React.useState(['']);
+  const [membersLastNames, setMembersLastNames] = React.useState(['']);
 
   const initializeWalletName = (event) => {
     setWalletName(event.target.value);
@@ -71,6 +71,32 @@ const CreateVault = () => {
 
         console.log("fetching info from the blockchain..");
         const info = await theVault.getWalletId(walletName);
+        console.log("fetched!");
+        console.log(info);
+        //  setMemos(memos);
+      } else {
+        console.log("Metamask is not connected");
+      }
+
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const getWalletOwner = async () => {
+    try {
+      const { ethereum } = window;
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const theVault = new ethers.Contract(
+          contractAddress,
+          contractABI,
+          signer
+        );
+
+        console.log("fetching info from the blockchain..");
+        const info = await theVault.getWalletOwner(walletName);
         console.log("fetched!");
         console.log(info);
         //  setMemos(memos);
@@ -165,9 +191,11 @@ const CreateVault = () => {
   };
 
   const handleRemoveInput = () => {
-    setMembersAddresses(membersAddresses.slice(0, -1));
-    setMembersFirstNames(membersFirstNames.slice(0, -1));
-    setMembersLastNames(membersLastNames.slice(0, -1));
+    if (membersAddresses.length > 1) {
+      setMembersAddresses(membersAddresses.slice(0, -1));
+      setMembersFirstNames(membersFirstNames.slice(0, -1));
+      setMembersLastNames(membersLastNames.slice(0, -1));
+    }
   };
 
   const handleChangeAddresses = (e, index) => {
@@ -197,10 +225,13 @@ const CreateVault = () => {
       <div style={{ display: "flex", flexDirection: "row" }}>
         <div style={{ display: "flex", flexDirection: "column" }}>
           {membersAddresses.map((input, index) => (
-            <input key={index} type="text" placeholder="Type user' address..."
+            index == 0 ? (<input key={index} type="text" placeholder={ethAddress}
+              value={ethAddress}
+              readOnly
+            />) : (<input key={index} type="text" placeholder="Type user' address..."
               value={input.value}
               onChange={e => handleChangeAddresses(e, index)}
-            />
+            />)
           ))}
         </div>
         <div style={{ display: "flex", flexDirection: "column" }}>
@@ -228,6 +259,9 @@ const CreateVault = () => {
         <button onClick={getWalletId}>Get wallet's id</button>
       </div>
       <div>
+        <button onClick={getWalletOwner}>Get wallet's owner</button>
+      </div>
+      <div>
         <button onClick={getWalletMembers}>Get wallet's members</button>
       </div>
       <div>
@@ -244,4 +278,11 @@ const CreateVault = () => {
     </div>)
 
 }
+
+CreateVault.getInitialProps = async ({ query }) => {
+  const ethAddress = query.ethAddress || null
+
+  return { ethAddress }
+}
+
 export default CreateVault;

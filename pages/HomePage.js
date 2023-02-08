@@ -2,12 +2,12 @@ import { useRouter } from 'next/router'
 
 const HomePage = ({ ethAddress }) => {
   const router = useRouter();
-  const mySecret = process.env.ADDRESS;
 
   const createVault = () => {
-    console.log(123);
-    console.log(mySecret);
-    router.push('/CreateVault');
+    router.push( {
+      pathname: '/CreateVault',
+      query: { ethAddress }
+    });
   };
 
   return (
