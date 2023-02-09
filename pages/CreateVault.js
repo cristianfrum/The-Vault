@@ -3,14 +3,18 @@ import Link from 'next/link';
 import abi from '../utils/TheVault.json';
 import { ethers } from 'ethers';
 
-const CreateVault = ({ ethAddress }) => {
+const CreateVault = ({ initialAddress }) => {
+  // We're using Checksum algorithm to store ETH addresses in their original casing, in order to avoid sending lower-cased addresses to the blockchain
+  const util = require('ethereumjs-util');
   const [walletName, setWalletName] = React.useState('');
   const [walletBalance, setWalletBalance] = React.useState('');
-  const contractAddress = "0x68789207210a603cc79132da7B5bd477474b2ba1";
+  const contractAddress = "0x10ab8bE67086eD3bc3743395d5D753ccF192F52C";
   const contractABI = abi.abi;
-  const [membersAddresses, setMembersAddresses] = React.useState([ethAddress]);
+  const [ethAddress, setEthAddress] = React.useState('');
+  const [membersAddresses, setMembersAddresses] = React.useState([initialAddress]);
   const [membersFirstNames, setMembersFirstNames] = React.useState(['']);
   const [membersLastNames, setMembersLastNames] = React.useState(['']);
+  const isMetaMaskAvailable = typeof window !== 'undefined' && window.ethereum;
 
   const initializeWalletName = (event) => {
     setWalletName(event.target.value);
@@ -21,6 +25,21 @@ const CreateVault = ({ ethAddress }) => {
     setWalletBalance(event.target.value);
     console.log("input: " + walletBalance);
   };
+
+  React.useEffect(() => {
+    if (!isMetaMaskAvailable) return
+
+    //Update the state whenever the address changes
+    window.ethereum.on('accountsChanged', async (addresses) => {
+      setEthAddress(util.toChecksumAddress(addresses[0]));
+    });
+
+    //Update the state when the user logs in
+    window.ethereum.request({ method: 'eth_requestAccounts' }).then(async (addresses) => {
+      setEthAddress(util.toChecksumAddress(addresses[0]));
+    })
+
+  }, [isMetaMaskAvailable])
 
   const createTheWallet = async () => {
     try {
@@ -34,6 +53,14 @@ const CreateVault = ({ ethAddress }) => {
           contractABI,
           signer
         );
+
+        try {
+          // ...
+          console.log("walletName: ", walletName);
+          // ...
+        } catch (error) {
+          console.log(error);
+        }
 
         console.log("creating the wallet..");
 
@@ -56,32 +83,6 @@ const CreateVault = ({ ethAddress }) => {
       console.log(error);
     }
   }
-
-  const getWalletId = async () => {
-    try {
-      const { ethereum } = window;
-      if (ethereum) {
-        const provider = new ethers.providers.Web3Provider(ethereum);
-        const signer = provider.getSigner();
-        const theVault = new ethers.Contract(
-          contractAddress,
-          contractABI,
-          signer
-        );
-
-        console.log("fetching info from the blockchain..");
-        const info = await theVault.getWalletId(walletName);
-        console.log("fetched!");
-        console.log(info);
-        //  setMemos(memos);
-      } else {
-        console.log("Metamask is not connected");
-      }
-
-    } catch (error) {
-      console.log(error);
-    }
-  };
 
   const getWalletOwner = async () => {
     try {
@@ -225,8 +226,8 @@ const CreateVault = ({ ethAddress }) => {
       <div style={{ display: "flex", flexDirection: "row" }}>
         <div style={{ display: "flex", flexDirection: "column" }}>
           {membersAddresses.map((input, index) => (
-            index == 0 ? (<input key={index} type="text" placeholder={ethAddress}
-              value={ethAddress}
+            index == 0 ? (<input key={index} type="text" placeholder={ethAddress == null ? initialAddress : ethAddress}
+              value={ethAddress == null ? initialAddress : ethAddress}
               readOnly
             />) : (<input key={index} type="text" placeholder="Type user' address..."
               value={input.value}
@@ -256,9 +257,6 @@ const CreateVault = ({ ethAddress }) => {
         <button onClick={createTheWallet}>Create the wallet</button>
       </div>
       <div>
-        <button onClick={getWalletId}>Get wallet's id</button>
-      </div>
-      <div>
         <button onClick={getWalletOwner}>Get wallet's owner</button>
       </div>
       <div>
@@ -280,9 +278,9 @@ const CreateVault = ({ ethAddress }) => {
 }
 
 CreateVault.getInitialProps = async ({ query }) => {
-  const ethAddress = query.ethAddress || null
+  const initialAddress = query.initialAddress || null
 
-  return { ethAddress }
+  return { initialAddress }
 }
 
 export default CreateVault;

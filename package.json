@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "ethereumjs-util": "^7.1.5",
     "ethers": "^5.7.2",
     "next": "12.2.0",
     "react": "18.2.0",

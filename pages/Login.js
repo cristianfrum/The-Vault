@@ -3,6 +3,8 @@ import { useRouter } from 'next/router'
 
 const LoginPage = () => {
   const router = useRouter();
+  // We're using Checksum algorithm to store ETH addresses in their original casing, in order to avoid sending lower-cased addresses to the blockchain
+  const util = require('ethereumjs-util');
 
   // Initializing state variables
   const [ethAddress, setEthAddress] = React.useState(null)
@@ -18,19 +20,18 @@ const LoginPage = () => {
 
     //Update the state whenever the address changes
     window.ethereum.on('accountsChanged', async (addresses) => {
-      setEthAddress(addresses[0])
+      setEthAddress(util.toChecksumAddress(addresses[0]));
     });
 
     //Update the state when the user logs in
     window.ethereum.request({ method: 'eth_requestAccounts' }).then(async (addresses) => {
-      setEthAddress(addresses[0])
+      setEthAddress(util.toChecksumAddress(addresses[0]));
     })
 
   }, [isMetaMaskAvailable])
 
   React.useEffect(() => {
     if (!ethAddress) return
-
     router.push({
       pathname: '/HomePage',
       query: { ethAddress }
