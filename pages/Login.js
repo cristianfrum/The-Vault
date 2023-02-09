@@ -7,7 +7,7 @@ const LoginPage = () => {
   const util = require('ethereumjs-util');
 
   // Initializing state variables
-  const [ethAddress, setEthAddress] = React.useState(null)
+  const [initialAddress, setInitialAddress] = React.useState(null)
   const [isLoading, setIsLoading] = React.useState(false)
   const [error, setError] = React.useState(null)
 
@@ -20,30 +20,30 @@ const LoginPage = () => {
 
     //Update the state whenever the address changes
     window.ethereum.on('accountsChanged', async (addresses) => {
-      setEthAddress(util.toChecksumAddress(addresses[0]));
+      setInitialAddress(util.toChecksumAddress(addresses[0]));
     });
 
     //Update the state when the user logs in
     window.ethereum.request({ method: 'eth_requestAccounts' }).then(async (addresses) => {
-      setEthAddress(util.toChecksumAddress(addresses[0]));
+      setInitialAddress(util.toChecksumAddress(addresses[0]));
     })
 
   }, [isMetaMaskAvailable])
 
   React.useEffect(() => {
-    if (!ethAddress) return
+    if (!initialAddress) return
     router.push({
       pathname: '/HomePage',
-      query: { ethAddress }
+      query: { initialAddress }
     })
-  }, [ethAddress])
+  }, [initialAddress])
 
   const handleLogin = async () => {
 
     if (!isMetaMaskAvailable) return
 
     window.ethereum.request({ method: 'eth_requestAccounts' }).then(async (addresses) => {
-      setEthAddress(addresses[0])
+      setInitialAddress(addresses[0])
     })
   };
 

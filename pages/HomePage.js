@@ -75,7 +75,7 @@ const HomePage = ({ initialAddress }) => {
 }
 
 HomePage.getInitialProps = async ({ query }) => {
-  const initialAddress = query.ethAddress || null
+  const initialAddress = query.initialAddress || null
   return { initialAddress }
 }
 
