@@ -8,7 +8,7 @@ const CreateVault = ({ initialAddress }) => {
   const util = require('ethereumjs-util');
   const [walletName, setWalletName] = React.useState('');
   const [walletBalance, setWalletBalance] = React.useState('');
-  const contractAddress = "0x10ab8bE67086eD3bc3743395d5D753ccF192F52C";
+  const contractAddress = "0xA182F3C0D0650bfE39fA49172b94686a15FAC638";
   const contractABI = abi.abi;
   const [ethAddress, setEthAddress] = React.useState('');
   const [membersAddresses, setMembersAddresses] = React.useState([initialAddress]);
@@ -63,6 +63,7 @@ const CreateVault = ({ initialAddress }) => {
         }
 
         console.log("creating the wallet..");
+        console.log(membersAddresses);
 
         const vault = await theVault.initializeWallet(walletName, membersAddresses, membersFirstNames, membersLastNames, {
           value: ethers.utils.parseEther(walletBalance),
@@ -78,107 +79,6 @@ const CreateVault = ({ initialAddress }) => {
         // Clear the form fields.
         // setName("");
         // setMessage("");
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  const getWalletOwner = async () => {
-    try {
-      const { ethereum } = window;
-      if (ethereum) {
-        const provider = new ethers.providers.Web3Provider(ethereum);
-        const signer = provider.getSigner();
-        const theVault = new ethers.Contract(
-          contractAddress,
-          contractABI,
-          signer
-        );
-
-        console.log("fetching info from the blockchain..");
-        const info = await theVault.getWalletOwner(walletName);
-        console.log("fetched!");
-        console.log(info);
-        //  setMemos(memos);
-      } else {
-        console.log("Metamask is not connected");
-      }
-
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const getWalletMembers = async () => {
-    try {
-      const { ethereum } = window;
-      if (ethereum) {
-        const provider = new ethers.providers.Web3Provider(ethereum);
-        const signer = provider.getSigner();
-        const theVault = new ethers.Contract(
-          contractAddress,
-          contractABI,
-          signer
-        );
-
-        console.log("fetching info from the blockchain..");
-        const info = await theVault.getWalletMembers(walletName);
-        console.log("fetched!");
-        console.log(info);
-        //  setMemos(memos);
-      } else {
-        console.log("Metamask is not connected");
-      }
-
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const getWalletMemberCounter = async () => {
-    try {
-      const { ethereum } = window;
-      if (ethereum) {
-        const provider = new ethers.providers.Web3Provider(ethereum);
-        const signer = provider.getSigner();
-        const theVault = new ethers.Contract(
-          contractAddress,
-          contractABI,
-          signer
-        );
-
-        console.log("fetching info from the blockchain..");
-        const info = await theVault.getWalletMemberCounter(walletName);
-        console.log("fetched!");
-        console.log(info);
-        //  setMemos(memos);
-      } else {
-        console.log("Metamask is not connected");
-      }
-
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const getWalletBalance = async () => {
-    try {
-      const { ethereum } = window;
-      if (ethereum) {
-        const provider = new ethers.providers.Web3Provider(ethereum);
-        const signer = provider.getSigner();
-        const theVault = new ethers.Contract(
-          contractAddress,
-          contractABI,
-          signer
-        );
-        console.log("fetching info from the blockchain..");
-        const info = await theVault.getWalletBalance(walletName) / 10 ** 18;
-        console.log("fetched!");
-        console.log(info);
-      } else {
-        console.log("Metamask is not connected");
       }
     } catch (error) {
       console.log(error);
@@ -255,18 +155,6 @@ const CreateVault = ({ initialAddress }) => {
       <input type="text" placeholder="Set wallet's balance..." value={walletBalance} onChange={initializeWalletBalance} />
       <div>
         <button onClick={createTheWallet}>Create the wallet</button>
-      </div>
-      <div>
-        <button onClick={getWalletOwner}>Get wallet's owner</button>
-      </div>
-      <div>
-        <button onClick={getWalletMembers}>Get wallet's members</button>
-      </div>
-      <div>
-        <button onClick={getWalletMemberCounter}>Get wallet's member counter</button>
-      </div>
-      <div>
-        <button onClick={getWalletBalance}>Get wallet's balance</button>
       </div>
       <div>
         <Link href="/">
