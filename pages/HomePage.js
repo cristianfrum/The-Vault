@@ -4,8 +4,10 @@ import { ethers } from 'ethers'
 import abi from '../utils/TheVault.json';
 
 
-const getWalletData = async (memberAddress, setData) => {
-  const { ethereum } = window;
+const getWalletData = async (memberAddress, setWalletData) => {
+  try{
+    const {ethereum} = window;
+    if(ethereum) {
   const contractAddress = "0xA182F3C0D0650bfE39fA49172b94686a15FAC638";
   const contractABI = abi.abi;
   const provider = new ethers.providers.Web3Provider(ethereum);
@@ -20,7 +22,7 @@ const getWalletData = async (memberAddress, setData) => {
   const data = await contract.functions
     .getWalletData(memberAddress);
 
-  setData({
+  setWalletData({
     walletId: data[0],
     ownerAddress: data[1],
     balance: data[2],
@@ -28,6 +30,12 @@ const getWalletData = async (memberAddress, setData) => {
     membersFirstNames: data[4],
     membersLastNames: data[5]
   });
+    }else {
+        console.log("Metamask is not connected");
+      }
+  } catch(error) {
+    console.log(error);
+  }
 };
 
 const HomePage = ({ initialAddress }) => {
@@ -62,41 +70,23 @@ const HomePage = ({ initialAddress }) => {
 
   }, [isMetaMaskAvailable])
 
-  React.useEffect(() => {
-    getWalletId();
+  React.useEffect(() => { 
+    getData();
   }, [ethAddress])
 
-  const getWalletId = async () => {
-    try {
-      const { ethereum } = window;
-      if (ethereum) {
-        const provider = new ethers.providers.Web3Provider(ethereum);
-        const signer = provider.getSigner();
-        const theVault = new ethers.Contract(
-          contractAddress,
-          contractABI,
-          signer
-        );
-
-        if (ethAddress != '' && ethAddress != null && initialAddress != null && initialAddress != '') {
+  const getData = async () => {
+     
           const data = await getWalletData((ethAddress == null || ethAddress == '') ? initialAddress : ethAddress, setWalletData);
-          console.log("FETCHED!");
+          if(walletData != null) {
+            console.log("FETCHED!");
           console.log(data);
           console.log(walletData);
           console.log(walletData.walletId);
           console.log(walletData.ownerAddress);
-          console.log(walletData.membersAddresses.length);
+          console.log(walletData.membersAddresses);
           console.log(walletData.membersFirstNames);
           console.log(walletData.membersLastNames);
-        }
-        //  setMemos(memos);
-      } else {
-        console.log("Metamask is not connected");
-      }
-
-    } catch (error) {
-      console.log(error);
-    }
+          }
   };
 
   return (
@@ -106,9 +96,6 @@ const HomePage = ({ initialAddress }) => {
       <button onClick={createVault}>
         Create a vault
       </button>
-      <div>
-        <button onClick={getWalletId}>Get wallet's id</button>
-      </div>
       <div>
         <h2>Retrieved Data</h2>
         <ul>
