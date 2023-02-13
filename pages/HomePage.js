@@ -5,35 +5,35 @@ import abi from '../utils/TheVault.json';
 
 
 const getWalletData = async (memberAddress, setWalletData) => {
-  try{
-    const {ethereum} = window;
-    if(ethereum) {
-  const contractAddress = "0xA182F3C0D0650bfE39fA49172b94686a15FAC638";
-  const contractABI = abi.abi;
-  const provider = new ethers.providers.Web3Provider(ethereum);
-  const signer = provider.getSigner();
+  try {
+    const { ethereum } = window;
+    if (ethereum) {
+      const contractAddress = "0x38741bCd0cd371C71b91e680adEF09Ae58B25EbD";
+      const contractABI = abi.abi;
+      const provider = new ethers.providers.Web3Provider(ethereum);
+      const signer = provider.getSigner();
 
-  const contract = new ethers.Contract(
-    contractAddress,
-    contractABI,
-    signer
-  );
+      const contract = new ethers.Contract(
+        contractAddress,
+        contractABI,
+        signer
+      );
 
-  const data = await contract.functions
-    .getWalletData(memberAddress);
+      const data = await contract.functions
+        .getWalletData(memberAddress);
 
-  setWalletData({
-    walletId: data[0],
-    ownerAddress: data[1],
-    balance: data[2],
-    membersAddresses: data[3],
-    membersFirstNames: data[4],
-    membersLastNames: data[5]
-  });
-    }else {
-        console.log("Metamask is not connected");
-      }
-  } catch(error) {
+      setWalletData({
+        walletId: data[0],
+        ownerAddress: data[1],
+        balance: ethers.BigNumber.from(data[2]).toString(),
+        membersAddresses: data[3],
+        membersFirstNames: data[4],
+        membersLastNames: data[5]
+      });
+    } else {
+      console.log("Metamask is not connected");
+    }
+  } catch (error) {
     console.log(error);
   }
 };
@@ -41,7 +41,7 @@ const getWalletData = async (memberAddress, setWalletData) => {
 const HomePage = ({ initialAddress }) => {
   // We're using Checksum algorithm to store ETH addresses in their original casing, in order to avoid sending lower-cased addresses to the blockchain
   const util = require('ethereumjs-util');
-  const contractAddress = "0xaEB95E065CEf071Eeb2385d90f52fBB907e28489";
+  const contractAddress = "0x35cda259C02d7218AE060b6aD3497a898535cE47";
   const contractABI = abi.abi;
   const router = useRouter();
   const isMetaMaskAvailable = typeof window !== 'undefined' && window.ethereum
@@ -54,6 +54,33 @@ const HomePage = ({ initialAddress }) => {
       query: { initialAddress }
     });
   };
+
+  const leaveWallet = async () => {
+    try {
+      const { ethereum } = window;
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const contract = new ethers.Contract(
+          contractAddress,
+          contractABI,
+          signer
+        );
+
+        const execute = await contract.leaveWallet((ethAddress == null || ethAddress == '') ? initialAddress : ethAddress, {
+
+          gasPrice: ethers.utils.parseUnits('180', 'gwei'),
+        });
+        await execute.wait();
+        console.log("ERASED");
+      } else {
+        console.log("Please install MetaMask")
+      }
+    }
+    catch (error) {
+      console.log(error);
+    }
+  }
 
   React.useEffect(() => {
     if (!isMetaMaskAvailable) return
@@ -70,42 +97,77 @@ const HomePage = ({ initialAddress }) => {
 
   }, [isMetaMaskAvailable])
 
-  React.useEffect(() => { 
+  React.useEffect(() => {
     getData();
+    console.log("TEST");
+    console.log(walletData);
+    console.log(walletData.length);
+    console.log(walletData.walletId);
   }, [ethAddress])
 
   const getData = async () => {
-     
-          const data = await getWalletData((ethAddress == null || ethAddress == '') ? initialAddress : ethAddress, setWalletData);
-          if(walletData != null) {
-            console.log("FETCHED!");
-          console.log(data);
-          console.log(walletData);
-          console.log(walletData.walletId);
-          console.log(walletData.ownerAddress);
-          console.log(walletData.membersAddresses);
-          console.log(walletData.membersFirstNames);
-          console.log(walletData.membersLastNames);
-          }
+    console.log("hau miau");
+    const data = await getWalletData((ethAddress == null || ethAddress == '') ? initialAddress : ethAddress, setWalletData);
+    if (walletData != null) {
+      console.log("FETCHED!");
+      console.log(data);
+      console.log(walletData);
+      console.log(walletData.walletId);
+      console.log(walletData.ownerAddress);
+      console.log(walletData.membersAddresses);
+      console.log(walletData.membersFirstNames);
+      console.log(walletData.membersLastNames);
+    }
   };
 
   return (
     <div>
       <h1>Your Ethereum address</h1>
       <h5> {ethAddress == null ? initialAddress : ethAddress}</h5>
+      {
+        walletData && walletData.walletId != 0 ? (
+          <div>
+            <h2>Wallet Data</h2>
+            <ul>
+              <li>
+                <strong>Wallet Id:</strong> {walletData.walletId}
+              </li>
+              <li>
+                <strong>Owner Address:</strong> {walletData.ownerAddress}
+              </li>
+              <li>
+                <strong>Wallet Balance:</strong> {(walletData.balance / 10 ** 18).toFixed(6)} ETH
+              </li>
+            </ul>
+            <h2>Member List</h2>
+            {
+              walletData && walletData.membersAddresses && walletData.membersAddresses.map((address, index) => (
+                <ul key={index}>
+                  <li>
+                    <strong>Address:</strong> {address}
+                  </li>
+                  <li>
+                    <strong>First Name:</strong> {walletData.membersFirstNames[index]}
+                  </li>
+                  <li>
+                    <strong>Last Name:</strong> {walletData.membersLastNames[index]}
+                  </li>
+                </ul>
+              ))
+            }
+          </div>
+        ) : (
+          <div>
+            <p>You did not join a vault</p>
+          </div>
+        )
+      }
       <button onClick={createVault}>
-        Create a vault
+        Create a wallet
       </button>
-      <div>
-        <h2>Retrieved Data</h2>
-        <ul>
-          <li><strong>Wallet Id:</strong> {walletData.walletId}</li>
-          <li><strong>Owner Address:</strong> {walletData.ownerAddress}</li>
-          <li><strong>Members Addresses:</strong> {walletData.membersAddresses}</li>
-          <li><strong>Members First Names:</strong> {walletData.membersFirstNames}</li>
-          <li><strong>Members Last Names:</strong> {walletData.membersLastNames}</li>
-        </ul>
-      </div>
+      <button onClick={leaveWallet}>
+        Leave the wallet
+      </button>
     </div>
   )
 }

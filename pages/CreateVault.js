@@ -8,7 +8,7 @@ const CreateVault = ({ initialAddress }) => {
   const util = require('ethereumjs-util');
   const [walletName, setWalletName] = React.useState('');
   const [walletBalance, setWalletBalance] = React.useState('');
-  const contractAddress = "0xA182F3C0D0650bfE39fA49172b94686a15FAC638";
+  const contractAddress = "0x38741bCd0cd371C71b91e680adEF09Ae58B25EbD";
   const contractABI = abi.abi;
   const [ethAddress, setEthAddress] = React.useState('');
   const [membersAddresses, setMembersAddresses] = React.useState([initialAddress]);
@@ -67,7 +67,6 @@ const CreateVault = ({ initialAddress }) => {
 
         const vault = await theVault.initializeWallet(walletName, membersAddresses, membersFirstNames, membersLastNames, {
           value: ethers.utils.parseEther(walletBalance),
-          gasPrice: ethers.utils.parseUnits('20', 'gwei'),
         });
 
         await vault.wait();
