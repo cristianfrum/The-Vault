@@ -8,7 +8,7 @@ const getWalletData = async (memberAddress, setWalletData) => {
   try {
     const { ethereum } = window;
     if (ethereum) {
-      const contractAddress = "0x38741bCd0cd371C71b91e680adEF09Ae58B25EbD";
+      const contractAddress = "0xEE4d9108A44ca8AB9592dBE0C792fEb282465e3e";
       const contractABI = abi.abi;
       const provider = new ethers.providers.Web3Provider(ethereum);
       const signer = provider.getSigner();
@@ -41,7 +41,7 @@ const getWalletData = async (memberAddress, setWalletData) => {
 const HomePage = ({ initialAddress }) => {
   // We're using Checksum algorithm to store ETH addresses in their original casing, in order to avoid sending lower-cased addresses to the blockchain
   const util = require('ethereumjs-util');
-  const contractAddress = "0x35cda259C02d7218AE060b6aD3497a898535cE47";
+  const contractAddress = "0xEE4d9108A44ca8AB9592dBE0C792fEb282465e3e";
   const contractABI = abi.abi;
   const router = useRouter();
   const isMetaMaskAvailable = typeof window !== 'undefined' && window.ethereum
@@ -67,11 +67,9 @@ const HomePage = ({ initialAddress }) => {
           signer
         );
 
-        const execute = await contract.leaveWallet((ethAddress == null || ethAddress == '') ? initialAddress : ethAddress, {
-
-          gasPrice: ethers.utils.parseUnits('180', 'gwei'),
-        });
-        await execute.wait();
+        const execute = await contract.leaveWallet((ethAddress == null || ethAddress == '') ? initialAddress : ethAddress);
+       getData();
+        console.log(execute);
         console.log("ERASED");
       } else {
         console.log("Please install MetaMask")
@@ -99,14 +97,9 @@ const HomePage = ({ initialAddress }) => {
 
   React.useEffect(() => {
     getData();
-    console.log("TEST");
-    console.log(walletData);
-    console.log(walletData.length);
-    console.log(walletData.walletId);
   }, [ethAddress])
 
   const getData = async () => {
-    console.log("hau miau");
     const data = await getWalletData((ethAddress == null || ethAddress == '') ? initialAddress : ethAddress, setWalletData);
     if (walletData != null) {
       console.log("FETCHED!");

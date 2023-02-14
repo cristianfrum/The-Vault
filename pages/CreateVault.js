@@ -8,7 +8,7 @@ const CreateVault = ({ initialAddress }) => {
   const util = require('ethereumjs-util');
   const [walletName, setWalletName] = React.useState('');
   const [walletBalance, setWalletBalance] = React.useState('');
-  const contractAddress = "0x38741bCd0cd371C71b91e680adEF09Ae58B25EbD";
+  const contractAddress = "0xEE4d9108A44ca8AB9592dBE0C792fEb282465e3e";
   const contractABI = abi.abi;
   const [ethAddress, setEthAddress] = React.useState('');
   const [membersAddresses, setMembersAddresses] = React.useState([initialAddress]);
@@ -30,7 +30,7 @@ const CreateVault = ({ initialAddress }) => {
     if (!isMetaMaskAvailable) return
 
     //Update the state whenever the address changes
-    window.ethereum.on('accountsChanged', async (addresses) => {
+    window.ethereum.on('accountsChanged', async (addresses) => {  setMembersAddresses(prevAddresses => [addresses[0], ...prevAddresses.slice(1)]);
       setEthAddress(util.toChecksumAddress(addresses[0]));
     });
 
@@ -64,6 +64,9 @@ const CreateVault = ({ initialAddress }) => {
 
         console.log("creating the wallet..");
         console.log(membersAddresses);
+        console.log(ethAddress);
+        console.log(membersFirstNames);
+        console.log(membersLastNames);
 
         const vault = await theVault.initializeWallet(walletName, membersAddresses, membersFirstNames, membersLastNames, {
           value: ethers.utils.parseEther(walletBalance),
@@ -125,8 +128,8 @@ const CreateVault = ({ initialAddress }) => {
       <div style={{ display: "flex", flexDirection: "row" }}>
         <div style={{ display: "flex", flexDirection: "column" }}>
           {membersAddresses.map((input, index) => (
-            index == 0 ? (<input key={index} type="text" placeholder={ethAddress == null ? initialAddress : ethAddress}
-              value={ethAddress == null ? initialAddress : ethAddress}
+            index == 0 ? (<input key={index} type="text" 
+              value={membersAddresses[0]}
               readOnly
             />) : (<input key={index} type="text" placeholder="Type user' address..."
               value={input.value}
