@@ -1,27 +1,23 @@
 import { useRouter } from 'next/router'
 import React from 'react'
 import { ethers } from 'ethers'
-import abi from '../utils/TheVault.json';
-
+import { CONTRACT_ADDRESS, CONTRACT_ABI } from "../global";
 
 const getWalletData = async (memberAddress, setWalletData) => {
   try {
     const { ethereum } = window;
     if (ethereum) {
-      const contractAddress = "0xEE4d9108A44ca8AB9592dBE0C792fEb282465e3e";
-      const contractABI = abi.abi;
       const provider = new ethers.providers.Web3Provider(ethereum);
       const signer = provider.getSigner();
 
       const contract = new ethers.Contract(
-        contractAddress,
-        contractABI,
+        CONTRACT_ADDRESS,
+        CONTRACT_ABI,
         signer
       );
 
       const data = await contract.functions
         .getWalletData(memberAddress);
-
       setWalletData({
         walletId: data[0],
         ownerAddress: data[1],
@@ -30,6 +26,7 @@ const getWalletData = async (memberAddress, setWalletData) => {
         membersFirstNames: data[4],
         membersLastNames: data[5]
       });
+      await data.wait();
     } else {
       console.log("Metamask is not connected");
     }
@@ -40,19 +37,25 @@ const getWalletData = async (memberAddress, setWalletData) => {
 
 const HomePage = ({ initialAddress }) => {
   // We're using Checksum algorithm to store ETH addresses in their original casing, in order to avoid sending lower-cased addresses to the blockchain
+  const [isLoading, setIsLoading] = React.useState(true);
   const util = require('ethereumjs-util');
-  const contractAddress = "0xEE4d9108A44ca8AB9592dBE0C792fEb282465e3e";
-  const contractABI = abi.abi;
   const router = useRouter();
   const isMetaMaskAvailable = typeof window !== 'undefined' && window.ethereum
   const [ethAddress, setEthAddress] = React.useState('')
   const [walletData, setWalletData] = React.useState([]);
 
   const createVault = () => {
-    router.push({
-      pathname: '/CreateVault',
-      query: { initialAddress }
-    });
+    if (ethAddress == '') {
+      router.push({
+        pathname: '/CreateVault',
+        query: { initialAddress: initialAddress }
+      });
+    } else {
+      router.push({
+        pathname: '/CreateVault',
+        query: { initialAddress: ethAddress }
+      });
+    }
   };
 
   const leaveWallet = async () => {
@@ -62,13 +65,15 @@ const HomePage = ({ initialAddress }) => {
         const provider = new ethers.providers.Web3Provider(ethereum);
         const signer = provider.getSigner();
         const contract = new ethers.Contract(
-          contractAddress,
-          contractABI,
+          CONTRACT_ADDRESS,
+          CONTRACT_ABI,
           signer
         );
 
-        const execute = await contract.leaveWallet((ethAddress == null || ethAddress == '') ? initialAddress : ethAddress);
-       getData();
+        setIsLoading(true);
+        const execute = await contract.leaveWallet((ethAddress == '') ? initialAddress : ethAddress);
+        await execute.wait();
+        getData();
         console.log(execute);
         console.log("ERASED");
       } else {
@@ -99,9 +104,21 @@ const HomePage = ({ initialAddress }) => {
     getData();
   }, [ethAddress])
 
+  React.useEffect(() => {
+    const handleStart = () => setIsLoading(true)
+    const handleComplete = () => setIsLoading(false)
+
+    router.events.on('routeChangeStart', handleStart)
+    router.events.on('routeChangeComplete', handleComplete)
+    router.events.on('routeChangeError', handleComplete)
+  }, [router])
+
   const getData = async () => {
-    const data = await getWalletData((ethAddress == null || ethAddress == '') ? initialAddress : ethAddress, setWalletData);
+    setIsLoading(true);
+    const data = await getWalletData((ethAddress == '') ? initialAddress : ethAddress, setWalletData);
+    setIsLoading(false);
     if (walletData != null) {
+      setIsLoading(false);
       console.log("FETCHED!");
       console.log(data);
       console.log(walletData);
@@ -114,9 +131,9 @@ const HomePage = ({ initialAddress }) => {
   };
 
   return (
-    <div>
+    isLoading ? (<h5>"Loading..."</h5>) : (<div>
       <h1>Your Ethereum address</h1>
-      <h5> {ethAddress == null ? initialAddress : ethAddress}</h5>
+      <h5> {ethAddress == '' ? initialAddress : ethAddress}</h5>
       {
         walletData && walletData.walletId != 0 ? (
           <div>
@@ -161,8 +178,8 @@ const HomePage = ({ initialAddress }) => {
       <button onClick={leaveWallet}>
         Leave the wallet
       </button>
-    </div>
-  )
+    </div>)
+  );
 }
 
 HomePage.getInitialProps = async ({ query }) => {
