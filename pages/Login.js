@@ -15,12 +15,15 @@ const LoginPage = () => {
   const isMetaMaskAvailable = typeof window !== 'undefined' && window.ethereum
 
   //
+  //
   React.useEffect(() => {
     if (!isMetaMaskAvailable) return
 
     //Update the state whenever the address changes
     window.ethereum.on('accountsChanged', async (addresses) => {
-      setInitialAddress(util.toChecksumAddress(addresses[0]));
+      if(addresses.length != 0) {
+        setInitialAddress(util.toChecksumAddress(addresses[0]));
+      }
     });
 
     //Update the state when the user logs in

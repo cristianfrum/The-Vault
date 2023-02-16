@@ -26,9 +26,7 @@ const getWalletData = async (memberAddress, setWalletData) => {
         membersFirstNames: data[4],
         membersLastNames: data[5]
       });
-      await data.wait();
-    } else {
-      console.log("Metamask is not connected");
+      await data.wait;
     }
   } catch (error) {
     console.log(error);
@@ -43,6 +41,7 @@ const HomePage = ({ initialAddress }) => {
   const isMetaMaskAvailable = typeof window !== 'undefined' && window.ethereum
   const [ethAddress, setEthAddress] = React.useState('')
   const [walletData, setWalletData] = React.useState([]);
+  const lastConnectedAccount = 0;
 
   const createVault = () => {
     if (ethAddress == '') {
@@ -74,10 +73,6 @@ const HomePage = ({ initialAddress }) => {
         const execute = await contract.leaveWallet((ethAddress == '') ? initialAddress : ethAddress);
         await execute.wait();
         getData();
-        console.log(execute);
-        console.log("ERASED");
-      } else {
-        console.log("Please install MetaMask")
       }
     }
     catch (error) {
@@ -87,17 +82,27 @@ const HomePage = ({ initialAddress }) => {
 
   React.useEffect(() => {
     if (!isMetaMaskAvailable) return
-
     //Update the state whenever the address changes
-    window.ethereum.on('accountsChanged', async (addresses) => {
+
+    window.ethereum.on('accountsChanged', (addresses) => {
+      //Disconnecting the last connected account on Metamask redirects the user to the login page
+      if (addresses.length == 0) {
+        router.push('/Login');
+      } else {
+        //Update the state whenever the address changes
+        setEthAddress(util.toChecksumAddress(addresses[0]));
+      }
+    });
+
+    //Retrieves the current ethAddress if the user changes the address on a different page and then navigates back
+    window.ethereum.request({ method: 'eth_requestAccounts' }).then(async (addresses) => {
       setEthAddress(util.toChecksumAddress(addresses[0]));
     });
 
-    //Update the state when the user logs in
-    window.ethereum.request({ method: 'eth_requestAccounts' }).then(async (addresses) => {
-      setEthAddress(util.toChecksumAddress(addresses[0]));
-    })
 
+    return () => {
+      window.ethereum.removeAllListeners('accountsChanged');
+    };
   }, [isMetaMaskAvailable])
 
   React.useEffect(() => {
@@ -119,14 +124,6 @@ const HomePage = ({ initialAddress }) => {
     setIsLoading(false);
     if (walletData != null) {
       setIsLoading(false);
-      console.log("FETCHED!");
-      console.log(data);
-      console.log(walletData);
-      console.log(walletData.walletId);
-      console.log(walletData.ownerAddress);
-      console.log(walletData.membersAddresses);
-      console.log(walletData.membersFirstNames);
-      console.log(walletData.membersLastNames);
     }
   };
 
@@ -150,34 +147,56 @@ const HomePage = ({ initialAddress }) => {
               </li>
             </ul>
             <h2>Member List</h2>
-            {
-              walletData && walletData.membersAddresses && walletData.membersAddresses.map((address, index) => (
-                <ul key={index}>
-                  <li>
-                    <strong>Address:</strong> {address}
-                  </li>
-                  <li>
-                    <strong>First Name:</strong> {walletData.membersFirstNames[index]}
-                  </li>
-                  <li>
-                    <strong>Last Name:</strong> {walletData.membersLastNames[index]}
-                  </li>
-                </ul>
-              ))
-            }
+            <div style={{ display: "flex", flexDirection: "row" }}>
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                {
+                  walletData && walletData.membersAddresses && walletData.membersAddresses.map((address, index) => (
+                    <ul key={index}>
+                      <li>
+                        <strong>Address:</strong> {address}
+                      </li>
+                      <li>
+                        <strong>First Name:</strong> {walletData.membersFirstNames[index]}
+                      </li>
+                      <li>
+                        <strong>Last Name:</strong> {walletData.membersLastNames[index]}
+                      </li>
+                    </ul>
+                  ))
+                }
+              </div>
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                {
+                  walletData && walletData.membersAddresses && walletData.membersAddresses.map((address, index) => (
+                    <ul key={index}>
+                      <li>
+                        <strong>Address:</strong> {address}
+                      </li>
+                      <li>
+                        <strong>First Name:</strong> {walletData.membersFirstNames[index]}
+                      </li>
+                      <li>
+                        <strong>Last Name:</strong> {walletData.membersLastNames[index]}
+                      </li>
+                    </ul>
+                  ))
+                }
+
+              </div>
+            </div>
+            <button onClick={leaveWallet}>
+              Leave the wallet
+            </button>
           </div>
         ) : (
           <div>
             <p>You did not join a vault</p>
+            <button onClick={createVault}>
+              Create a wallet
+            </button>
           </div>
         )
       }
-      <button onClick={createVault}>
-        Create a wallet
-      </button>
-      <button onClick={leaveWallet}>
-        Leave the wallet
-      </button>
     </div>)
   );
 }

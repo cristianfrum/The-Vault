@@ -61,10 +61,16 @@ const CreateVault = ({ initialAddress }) => {
   React.useEffect(() => {
     if (!isMetaMaskAvailable) return
 
-    //Update the state whenever the address changes
-    window.ethereum.on('accountsChanged', async (addresses) => {
-      setMembersAddresses(prevAddresses => [addresses[0], ...prevAddresses.slice(1)]);
-      setEthAddress(util.toChecksumAddress(addresses[0]));
+    window.ethereum.on('accountsChanged', (addresses) => {
+      //Disconnecting the last connected account on Metamask redirects the user to the login page
+      if (addresses.length == 0) {
+        router.push('/Login');
+      } else {
+        //Update the "owner" input field whenever the address changes
+        setMembersAddresses(prevAddresses => [addresses[0], ...prevAddresses.slice(1)]);
+        //Update the state whenever the address changes
+        setEthAddress(util.toChecksumAddress(addresses[0]));
+      }
     });
 
     //Update the state when the user logs in
@@ -106,7 +112,7 @@ const CreateVault = ({ initialAddress }) => {
         console.log(membersLastNames);
 
         setIsLoading(true);
-        
+
         const vault = await theVault.initializeWallet(walletName, membersAddresses, membersFirstNames, membersLastNames, {
           value: ethers.utils.parseEther(walletBalance),
         });
@@ -177,61 +183,63 @@ const CreateVault = ({ initialAddress }) => {
   };
 
   return (
-  isLoading ? (<h5>"Loading..."</h5>) : (  <div>
+    isLoading ? (<h5>"Loading..."</h5>) : (<div>
       {
         walletData && walletData.walletId != 0 ? (
           <div>
             <p>You can not create a wallet since you're a member of another wallet</p>
-          </div>) : (
+            <Link href="/">
+              <button>Go to the home page</button>
+            </Link>
+          </div>
+        ) : (
           <div>
-          
-          <h1>Welcome to the Vault</h1>
-      <input type="text" placeholder="Type wallet's name..." value={walletName} onChange={initializeWalletName} />
-      <button onClick={handleAddInput}>Add New Member</button>
-      <button onClick={handleRemoveInput}>Remove Member</button>
-      <div style={{ display: "flex", flexDirection: "row" }}>
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          {membersAddresses.map((input, index) => (
-            index == 0 ? (<input key={index} type="text"
-              value={membersAddresses[0]}
-              readOnly
-            />) : (<input key={index} type="text" placeholder="Type user' address..."
-              value={input.value}
-              onChange={e => handleChangeAddresses(e, index)}
-            />)
-          ))}
-        </div>
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          {membersFirstNames.map((input, index) => (
-            <input key={index} type="text" placeholder="Type user' first name..."
-              value={input.value}
-              onChange={e => handleChangeFirstNames(e, index)}
-            />
-          ))}
-        </div>
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          {membersLastNames.map((input, index) => (
-            <input key={index} type="text" placeholder="Type users' last name..."
-              value={input.value}
-              onChange={e => handleChangeLastNames(e, index)}
-            />
-          ))}
-        </div>
-      </div>
-      <input type="text" placeholder="Set wallet's balance..." value={walletBalance} onChange={initializeWalletBalance} />
-      <div>
-        <button onClick={createTheWallet}>Create the wallet</button>
-      </div>
-      <div>
-        <Link href="/">
-          <button>Go to the home page</button>
-        </Link>
-      </div>
+            <h1>Welcome to the Vault</h1>
+            <input type="text" placeholder="Type wallet's name..." value={walletName} onChange={initializeWalletName} />
+            <button onClick={handleAddInput}>Add New Member</button>
+            <button onClick={handleRemoveInput}>Remove Member</button>
+            <div style={{ display: "flex", flexDirection: "row" }}>
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                {membersAddresses.map((input, index) => (
+                  index == 0 ? (<input key={index} type="text"
+                    value={membersAddresses[0]}
+                    readOnly
+                  />) : (<input key={index} type="text" placeholder="Type user' address..."
+                    value={input.value}
+                    onChange={e => handleChangeAddresses(e, index)}
+                  />)
+                ))}
+              </div>
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                {membersFirstNames.map((input, index) => (
+                  <input key={index} type="text" placeholder="Type user' first name..."
+                    value={input.value}
+                    onChange={e => handleChangeFirstNames(e, index)}
+                  />
+                ))}
+              </div>
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                {membersLastNames.map((input, index) => (
+                  <input key={index} type="text" placeholder="Type users' last name..."
+                    value={input.value}
+                    onChange={e => handleChangeLastNames(e, index)}
+                  />
+                ))}
+              </div>
+            </div>
+            <input type="text" placeholder="Set wallet's balance..." value={walletBalance} onChange={initializeWalletBalance} />
+            <div>
+              <button onClick={createTheWallet}>Create the wallet</button>
+            </div>
+            <div>
+              <Link href="/">
+                <button>Go to the home page</button>
+              </Link>
+            </div>
           </div>
         )
       }
     </div>))
-
 }
 
 CreateVault.getInitialProps = async ({ query }) => {
