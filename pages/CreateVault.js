@@ -16,19 +16,38 @@ const getWalletData = async (memberAddress, setWalletData) => {
         signer
       );
 
-      const data = await contract.functions
-        .getWalletData(memberAddress);
+      const walletId = await contract.functions
+        .getWalletId(memberAddress);
+      const walletOwnerAddress = await contract.functions
+        .getWalletOwner(memberAddress);
+      const walletBalance = await contract.functions
+        .getWalletBalance(memberAddress);
+      const walletMembersAddresses = await contract.functions
+        .getWalletMembersAddresses(memberAddress);
+      const walletMembersFirstNames = await contract.functions
+        .getWalletMembersFirstNames(memberAddress);
+      const walletMembersLastNames = await contract.functions
+        .getWalletMembersLastNames(memberAddress);
+
+      await walletMembersLastNames.wait;
+
+      console.log("111111111111111111");
+      console.log(walletMembersAddresses.map((address, index) => ({
+        address: address,
+        firstName: walletMembersFirstNames[index],
+        lastName: walletMembersLastNames[index]
+      })));
       setWalletData({
-        walletId: data[0],
-        ownerAddress: data[1],
-        balance: ethers.BigNumber.from(data[2]).toString(),
-        membersAddresses: data[3],
-        membersFirstNames: data[4],
-        membersLastNames: data[5]
+        walletId: walletId,
+        ownerAddress: walletOwnerAddress,
+        balance: walletBalance,
+        membersData: walletMembersAddresses.map((address, index) => ({
+          address: address,
+          firstName: walletMembersFirstNames[index],
+          lastName: walletMembersLastNames[index]
+        }))
       });
-      await data.wait();
-    } else {
-      console.log("Metamask is not connected");
+
     }
   } catch (error) {
     console.log(error);
@@ -133,14 +152,14 @@ const CreateVault = ({ initialAddress }) => {
     }
   }
 
+
   const getData = async () => {
     setIsLoading(true);
     const data = await getWalletData((ethAddress == '') ? initialAddress : ethAddress, setWalletData);
     setIsLoading(false);
     if (walletData != null) {
       setIsLoading(false);
-      console.log("FETCHED!");
-      console.log(data);
+      console.log("FETCHED ID!");
       console.log(walletData);
       console.log(walletData.walletId);
       console.log(walletData.ownerAddress);
@@ -185,7 +204,7 @@ const CreateVault = ({ initialAddress }) => {
   return (
     isLoading ? (<h5>"Loading..."</h5>) : (<div>
       {
-        walletData && walletData.walletId != 0 ? (
+        walletData.walletId != 0  ? (
           <div>
             <p>You can not create a wallet since you're a member of another wallet</p>
             <Link href="/">

@@ -16,17 +16,42 @@ const getWalletData = async (memberAddress, setWalletData) => {
         signer
       );
 
-      const data = await contract.functions
-        .getWalletData(memberAddress);
+      const walletId = await contract.functions
+        .getWalletId(memberAddress);
+      const walletOwnerAddress = await contract.functions
+        .getWalletOwner(memberAddress);
+      const walletBalance = await contract.functions
+        .getWalletBalance(memberAddress);
+      const walletMembersAddresses = await contract.functions
+        .getWalletMembersAddresses(memberAddress);
+      const walletMembersFirstNames = await contract.functions
+        .getWalletMembersFirstNames(memberAddress);
+      const walletMembersLastNames = await contract.functions
+        .getWalletMembersLastNames(memberAddress);
+      const walletMembersBalances = await contract.functions
+        .getWalletMembersBalances(memberAddress);
+      
+      await walletMembersLastNames.wait;
+      
+      console.log("111111111111111111");
+      console.log(walletMembersAddresses.map((address, index) => ({
+          address: address,
+          firstName: walletMembersFirstNames[index],
+          lastName: walletMembersLastNames[index],
+          balance: walletMembersBalances[index]
+        })));
       setWalletData({
-        walletId: data[0],
-        ownerAddress: data[1],
-        balance: ethers.BigNumber.from(data[2]).toString(),
-        membersAddresses: data[3],
-        membersFirstNames: data[4],
-        membersLastNames: data[5]
+        walletId: walletId,
+        ownerAddress: walletOwnerAddress,
+        balance: walletBalance,
+        membersData: walletMembersAddresses.map((address, index) => ({
+          address: address,
+          firstName: walletMembersFirstNames[index],
+          lastName: walletMembersLastNames[index],
+          balance: walletMembersBalances[index]
+        }))
       });
-      await data.wait;
+      
     }
   } catch (error) {
     console.log(error);
@@ -148,42 +173,48 @@ const HomePage = ({ initialAddress }) => {
             </ul>
             <h2>Member List</h2>
             <div style={{ display: "flex", flexDirection: "row" }}>
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                {
-                  walletData && walletData.membersAddresses && walletData.membersAddresses.map((address, index) => (
-                    <ul key={index}>
-                      <li>
-                        <strong>Address:</strong> {address}
-                      </li>
-                      <li>
-                        <strong>First Name:</strong> {walletData.membersFirstNames[index]}
-                      </li>
-                      <li>
-                        <strong>Last Name:</strong> {walletData.membersLastNames[index]}
-                      </li>
-                    </ul>
-                  ))
-                }
+                <div style={{ display: "flex", flexDirection: "column" }}>
+                  {walletData && walletData.membersData && walletData.membersData.map((member, index) => (
+                      <div key={index}>
+                        {member.address.map((address, i) => (
+                          <div key={i}>
+                             <ul>
+                              <li>
+                                <strong>Address:</strong> {address}
+                              </li>
+                              <li>
+                                <strong>First Name:</strong> {member.firstName[i]}
+                              </li>
+                              <li>
+                                <strong>Last Name:</strong> {member.lastName[i]} 
+                              </li>
+                            </ul>
+                          </div>
+                        ))}
+                      </div>
+                    ))}
+                          </div>
+           <div style={{ display: "flex", flexDirection: "column" }}>
+                        {walletData && walletData.membersData && walletData.membersData.map((member, index) => (
+                                <div key={index}>
+                                    {member.address.map((address, i) => (
+                                      <div key={i}>
+                                         <ul>
+                                          <li>
+                                            <strong>Balance:</strong> {ethers.BigNumber.from(member.balance[i]).toString()}
+                                          </li>
+                                          <li>
+                                            <button>
+                                            Send
+                                            </button>
+                                          </li>
+                                        </ul>
+                                      </div>
+                                    ))}
+                                  </div>
+                    ))}
               </div>
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                {
-                  walletData && walletData.membersAddresses && walletData.membersAddresses.map((address, index) => (
-                    <ul key={index}>
-                      <li>
-                        <strong>Address:</strong> {address}
-                      </li>
-                      <li>
-                        <strong>First Name:</strong> {walletData.membersFirstNames[index]}
-                      </li>
-                      <li>
-                        <strong>Last Name:</strong> {walletData.membersLastNames[index]}
-                      </li>
-                    </ul>
-                  ))
-                }
-
               </div>
-            </div>
             <button onClick={leaveWallet}>
               Leave the wallet
             </button>
