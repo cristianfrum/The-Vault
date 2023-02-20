@@ -15,7 +15,7 @@ const getWalletData = async (memberAddress, setWalletData) => {
         CONTRACT_ABI,
         signer
       );
-
+      
       const walletId = await contract.functions
         .getWalletId(memberAddress);
       const walletOwnerAddress = await contract.functions
@@ -30,16 +30,17 @@ const getWalletData = async (memberAddress, setWalletData) => {
         .getWalletMembersLastNames(memberAddress);
       const walletMembersBalances = await contract.functions
         .getWalletMembersBalances(memberAddress);
-      
+
       await walletMembersLastNames.wait;
-      
+
       console.log("111111111111111111");
       console.log(walletMembersAddresses.map((address, index) => ({
-          address: address,
-          firstName: walletMembersFirstNames[index],
-          lastName: walletMembersLastNames[index],
-          balance: walletMembersBalances[index]
-        })));
+        address: address,
+        firstName: walletMembersFirstNames[index],
+        lastName: walletMembersLastNames[index],
+        balance: walletMembersBalances[index]
+      })));
+
       setWalletData({
         walletId: walletId,
         ownerAddress: walletOwnerAddress,
@@ -51,7 +52,7 @@ const getWalletData = async (memberAddress, setWalletData) => {
           balance: walletMembersBalances[index]
         }))
       });
-      
+
     }
   } catch (error) {
     console.log(error);
@@ -66,7 +67,7 @@ const HomePage = ({ initialAddress }) => {
   const isMetaMaskAvailable = typeof window !== 'undefined' && window.ethereum
   const [ethAddress, setEthAddress] = React.useState('')
   const [walletData, setWalletData] = React.useState([]);
-  const lastConnectedAccount = 0;
+  const [userFunds, setUserFunds] = React.useState([]);
 
   const createVault = () => {
     if (ethAddress == '') {
@@ -104,6 +105,7 @@ const HomePage = ({ initialAddress }) => {
       console.log(error);
     }
   }
+
 
   React.useEffect(() => {
     if (!isMetaMaskAvailable) return
@@ -152,6 +154,49 @@ const HomePage = ({ initialAddress }) => {
     }
   };
 
+  
+
+const sendFunds = async (value, receiverAddress) => {
+  try {
+    // Check if MetaMask is installed
+    if (typeof window.ethereum !== 'undefined') {
+      console.log("VALOARE VALOARE VALOARE VALOARE VALOARE ");
+      console.log(userFunds);
+      console.log(value);
+      console.log(receiverAddress);
+      /*
+        
+        // Create a provider using the Web3Provider from ethers.js
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        // Get the signer from the provider
+        const signer = provider.getSigner();
+        // Create a contract instance using the CONTRACT_ADDRESS and CONTRACT_ABI
+        const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+        // Call the sendFunds function on the contract
+        const tx = await contract.sendFunds(receiverAddress);
+        // Wait for the transaction to be mined
+        await tx.wait();
+        // Call the getWalletTransactions function on the contract
+        const walletTransactions = await contract.getWalletTransactions(receiverAddress);
+        // Do something with the walletTransactions
+        */
+    } else {
+      // MetaMask is not installed, so show an error message
+      console.log('Please install MetaMask to use this feature');
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+  const handleUserFunds = (e, index) => {
+    const values = [...userFunds];
+    values[index] = e.target.value;
+    setUserFunds(values);
+    console.log("FUNDS");
+    console.log(userFunds[index]);
+  };
+
   return (
     isLoading ? (<h5>"Loading..."</h5>) : (<div>
       <h1>Your Ethereum address</h1>
@@ -173,48 +218,50 @@ const HomePage = ({ initialAddress }) => {
             </ul>
             <h2>Member List</h2>
             <div style={{ display: "flex", flexDirection: "row" }}>
-                <div style={{ display: "flex", flexDirection: "column" }}>
-                  {walletData && walletData.membersData && walletData.membersData.map((member, index) => (
-                      <div key={index}>
-                        {member.address.map((address, i) => (
-                          <div key={i}>
-                             <ul>
-                              <li>
-                                <strong>Address:</strong> {address}
-                              </li>
-                              <li>
-                                <strong>First Name:</strong> {member.firstName[i]}
-                              </li>
-                              <li>
-                                <strong>Last Name:</strong> {member.lastName[i]} 
-                              </li>
-                            </ul>
-                          </div>
-                        ))}
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                {walletData && walletData.membersData && walletData.membersData.map((member, index) => (
+                  <div key={index}>
+                    {member.address.map((address, i) => (
+                      <div key={i}>
+                        <ul>
+                          <li>
+                            <strong>Address:</strong> {address}
+                          </li>
+                          <li>
+                            <strong>First Name:</strong> {member.firstName[i]}
+                          </li>
+                          <li>
+                            <strong>Last Name:</strong> {member.lastName[i]}
+                          </li>
+                        </ul>
                       </div>
                     ))}
-                          </div>
-           <div style={{ display: "flex", flexDirection: "column" }}>
-                        {walletData && walletData.membersData && walletData.membersData.map((member, index) => (
-                                <div key={index}>
-                                    {member.address.map((address, i) => (
-                                      <div key={i}>
-                                         <ul>
-                                          <li>
-                                            <strong>Balance:</strong> {ethers.BigNumber.from(member.balance[i]).toString()}
-                                          </li>
-                                          <li>
-                                            <button>
-                                            Send
-                                            </button>
-                                          </li>
-                                        </ul>
-                                      </div>
-                                    ))}
-                                  </div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                {walletData && walletData.membersData && walletData.membersData.map((member, index) => (
+                  <div key={index}>
+                    {member.address.map((address, i) => (
+                      <div key={i}>
+                        <ul>
+                          <li>
+                            <strong>Balance:</strong> {ethers.BigNumber.from(member.balance[i]).toString()}
+                          </li>
+                          <li>
+                            <input type="number" placeholder="..." value={userFunds[i]} onChange={handleUserFunds} />
+                          </li>
+                          <li>
+                            <button onClick={() => sendFunds(userFunds[i], address)}>Send funds
+                            </button>
+                          </li>
+                        </ul>
+                      </div>
                     ))}
+                  </div>
+                ))}
               </div>
-              </div>
+            </div>
             <button onClick={leaveWallet}>
               Leave the wallet
             </button>

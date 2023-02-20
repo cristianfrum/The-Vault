@@ -204,7 +204,7 @@ const CreateVault = ({ initialAddress }) => {
   return (
     isLoading ? (<h5>"Loading..."</h5>) : (<div>
       {
-        walletData.walletId != 0  ? (
+        walletData.walletId != 0 ? (
           <div>
             <p>You can not create a wallet since you're a member of another wallet</p>
             <Link href="/">
@@ -246,7 +246,7 @@ const CreateVault = ({ initialAddress }) => {
                 ))}
               </div>
             </div>
-            <input type="text" placeholder="Set wallet's balance..." value={walletBalance} onChange={initializeWalletBalance} />
+            <input type="number" placeholder="Set wallet's balance..." value={walletBalance} onChange={initializeWalletBalance} />
             <div>
               <button onClick={createTheWallet}>Create the wallet</button>
             </div>
