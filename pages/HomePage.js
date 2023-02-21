@@ -3,7 +3,7 @@ import React from 'react'
 import { ethers } from 'ethers'
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from "../global";
 
-const getWalletData = async (memberAddress, setWalletData) => {
+const getWalletData = async (memberAddress, setWalletData, userFunds, setUserFunds) => {
   try {
     const { ethereum } = window;
     if (ethereum) {
@@ -15,31 +15,28 @@ const getWalletData = async (memberAddress, setWalletData) => {
         CONTRACT_ABI,
         signer
       );
-      
+
       const walletId = await contract.functions
         .getWalletId(memberAddress);
       const walletOwnerAddress = await contract.functions
         .getWalletOwner(memberAddress);
       const walletBalance = await contract.functions
-        .getWalletBalance(memberAddress);
+        .getWalletBalance(memberAddress); 
       const walletMembersAddresses = await contract.functions
-        .getWalletMembersAddresses(memberAddress);
+        .getWalletMembersAddresses(memberAddress);  
       const walletMembersFirstNames = await contract.functions
-        .getWalletMembersFirstNames(memberAddress);
+        .getWalletMembersFirstNames(memberAddress); 
       const walletMembersLastNames = await contract.functions
-        .getWalletMembersLastNames(memberAddress);
+        .getWalletMembersLastNames(memberAddress); 
       const walletMembersBalances = await contract.functions
-        .getWalletMembersBalances(memberAddress);
-
+        .getWalletMembersBalances(memberAddress); 
+      const walletTransactions = await contract.functions.getWalletTransactions(memberAddress);
+      
       await walletMembersLastNames.wait;
 
-      console.log("111111111111111111");
-      console.log(walletMembersAddresses.map((address, index) => ({
-        address: address,
-        firstName: walletMembersFirstNames[index],
-        lastName: walletMembersLastNames[index],
-        balance: walletMembersBalances[index]
-      })));
+      for(let i=0; i <walletMembersFirstNames.length; i++) {
+        setUserFunds([...userFunds, '']);
+      }
 
       setWalletData({
         walletId: walletId,
@@ -50,6 +47,12 @@ const getWalletData = async (memberAddress, setWalletData) => {
           firstName: walletMembersFirstNames[index],
           lastName: walletMembersLastNames[index],
           balance: walletMembersBalances[index]
+        })),
+        transactions: walletTransactions[0].map((tx) => ({
+          date: tx.date,
+          value: tx.value,
+          sender: tx.sender,
+          receiver: tx.receiver
         }))
       });
 
@@ -67,20 +70,13 @@ const HomePage = ({ initialAddress }) => {
   const isMetaMaskAvailable = typeof window !== 'undefined' && window.ethereum
   const [ethAddress, setEthAddress] = React.useState('')
   const [walletData, setWalletData] = React.useState([]);
-  const [userFunds, setUserFunds] = React.useState([]);
+  const [userFunds, setUserFunds] = React.useState(['']);
 
   const createVault = () => {
-    if (ethAddress == '') {
-      router.push({
-        pathname: '/CreateVault',
-        query: { initialAddress: initialAddress }
-      });
-    } else {
-      router.push({
+    router.push({
         pathname: '/CreateVault',
         query: { initialAddress: ethAddress }
       });
-    }
   };
 
   const leaveWallet = async () => {
@@ -96,9 +92,14 @@ const HomePage = ({ initialAddress }) => {
         );
 
         setIsLoading(true);
-        const execute = await contract.leaveWallet((ethAddress == '') ? initialAddress : ethAddress);
-        await execute.wait();
+try {
+  const execute = await contract.leaveWallet(ethAddress);
+  await execute.wait();
         getData();
+} catch (error) {
+  setIsLoading(false);
+  console.log("Transaction rejected or failed: ", error);
+}
       }
     }
     catch (error) {
@@ -147,60 +148,53 @@ const HomePage = ({ initialAddress }) => {
 
   const getData = async () => {
     setIsLoading(true);
-    const data = await getWalletData((ethAddress == '') ? initialAddress : ethAddress, setWalletData);
+
+    const data = await getWalletData((ethAddress == '') ? initialAddress : ethAddress, setWalletData, userFunds, setUserFunds);
+
     setIsLoading(false);
     if (walletData != null) {
       setIsLoading(false);
     }
   };
 
-  
-
-const sendFunds = async (value, receiverAddress) => {
-  try {
-    // Check if MetaMask is installed
-    if (typeof window.ethereum !== 'undefined') {
-      console.log("VALOARE VALOARE VALOARE VALOARE VALOARE ");
-      console.log(userFunds);
-      console.log(value);
-      console.log(receiverAddress);
-      /*
-        
+  const sendFunds = async (value, receiverAddress) => {
+    try {
+      // Check if MetaMask is installed
+      if (typeof window.ethereum !== 'undefined') {
         // Create a provider using the Web3Provider from ethers.js
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        // Get the signer from the provider
-        const signer = provider.getSigner();
-        // Create a contract instance using the CONTRACT_ADDRESS and CONTRACT_ABI
-        const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
-        // Call the sendFunds function on the contract
-        const tx = await contract.sendFunds(receiverAddress);
-        // Wait for the transaction to be mined
-        await tx.wait();
-        // Call the getWalletTransactions function on the contract
-        const walletTransactions = await contract.getWalletTransactions(receiverAddress);
-        // Do something with the walletTransactions
-        */
-    } else {
-      // MetaMask is not installed, so show an error message
-      console.log('Please install MetaMask to use this feature');
+          const provider = new ethers.providers.Web3Provider(window.ethereum);
+          // Get the signer from the provider
+          const signer = provider.getSigner();
+          // Create a contract instance using the CONTRACT_ADDRESS and CONTRACT_ABI
+          const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+          // Call the sendFunds function on the contract
+          const tx = await contract.sendFunds(ethAddress, receiverAddress, 
+                                              {
+                                                value: ethers.utils.parseEther(value)
+                                              });
+          // Wait for the transaction to be mined
+          setIsLoading(true);
+          await tx.wait();
+          getData();
+      } else {
+        // MetaMask is not installed, so show an error message
+        console.log('Please install MetaMask to use this feature');
+      }
+    } catch (error) {
+      console.log(error);
     }
-  } catch (error) {
-    console.log(error);
-  }
-};
+  };
 
   const handleUserFunds = (e, index) => {
     const values = [...userFunds];
     values[index] = e.target.value;
     setUserFunds(values);
-    console.log("FUNDS");
-    console.log(userFunds[index]);
   };
 
   return (
     isLoading ? (<h5>"Loading..."</h5>) : (<div>
       <h1>Your Ethereum address</h1>
-      <h5> {ethAddress == '' ? initialAddress : ethAddress}</h5>
+      <h5> {ethAddress}</h5>
       {
         walletData && walletData.walletId != 0 ? (
           <div>
@@ -246,10 +240,10 @@ const sendFunds = async (value, receiverAddress) => {
                       <div key={i}>
                         <ul>
                           <li>
-                            <strong>Balance:</strong> {ethers.BigNumber.from(member.balance[i]).toString()}
+                            <strong>Balance:</strong> {(ethers.BigNumber.from(ethers.BigNumber.from(member.balance[i])) / 10 ** 18).toString()}
                           </li>
                           <li>
-                            <input type="number" placeholder="..." value={userFunds[i]} onChange={handleUserFunds} />
+                            <input type="number" placeholder="..." value={userFunds[i]} onChange={e => handleUserFunds(e, i)} />
                           </li>
                           <li>
                             <button onClick={() => sendFunds(userFunds[i], address)}>Send funds
@@ -258,6 +252,34 @@ const sendFunds = async (value, receiverAddress) => {
                         </ul>
                       </div>
                     ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <h2>Transactions</h2>
+            <div style={{display: "flex", flexDirection: "row"}}>
+              <div style={{display: "flex", flexDirection: "column"}}>
+                {walletData && walletData.transactions && walletData.transactions.map((transaction, index) => (
+                  <div key={index}>
+                    <ul>
+                    <li>
+                    <strong>Date:</strong>
+                     {Date(ethers.BigNumber.from(transaction.date) * 1000).toString()}
+                    </li>
+                      
+                      <li>
+                    <strong>Value:</strong>
+                     {(ethers.BigNumber.from(ethers.BigNumber.from(transaction.value)) / 10 ** 18).toString()}
+                    </li>
+                      <li>
+                    <strong>Sender:</strong>
+                     {transaction.sender}
+                    </li>
+                      <li>
+                    <strong>Receiver:</strong>
+                     {transaction.receiver}
+                    </li>
+                    </ul>
                   </div>
                 ))}
               </div>
