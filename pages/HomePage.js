@@ -1,7 +1,7 @@
 import { useRouter } from "next/router";
 import React from "react";
 import { ethers } from "ethers";
-import { CONTRACT_ADDRESS, CONTRACT_ABI } from "../global";
+import { initializeBlockchain, contract } from "../blockchain";
 
 const getWalletData = async (
   memberAddress,
@@ -9,18 +9,6 @@ const getWalletData = async (
   userFunds,
   setUserFunds
 ) => {
-  try {
-    const { ethereum } = window;
-    if (ethereum) {
-      const provider = new ethers.providers.Web3Provider(ethereum);
-      const signer = provider.getSigner();
-
-      const contract = new ethers.Contract(
-        CONTRACT_ADDRESS,
-        CONTRACT_ABI,
-        signer
-      );
-
       const walletId = await contract.functions.getWalletId(memberAddress);
       const walletOwnerAddress = await contract.functions.getWalletOwner(
         memberAddress
@@ -68,10 +56,6 @@ const getWalletData = async (
           type: tx.txType
         })),
       });
-    }
-  } catch (error) {
-    console.log(error);
-  }
 };
 
 const HomePage = ({ initialAddress }) => {
@@ -95,14 +79,6 @@ const HomePage = ({ initialAddress }) => {
     try {
       const { ethereum } = window;
       if (ethereum) {
-        const provider = new ethers.providers.Web3Provider(ethereum);
-        const signer = provider.getSigner();
-        const contract = new ethers.Contract(
-          CONTRACT_ADDRESS,
-          CONTRACT_ABI,
-          signer
-        );
-
         setIsLoading(true);
         try {
           const execute = await contract.leaveWallet(ethAddress);
@@ -145,6 +121,7 @@ const HomePage = ({ initialAddress }) => {
   }, [isMetaMaskAvailable]);
 
   React.useEffect(() => {
+    initializeBlockchain();
     getData();
   }, [ethAddress]);
 
@@ -173,24 +150,11 @@ const HomePage = ({ initialAddress }) => {
     }
   };
 
-  const sendFunds = async (value, receiverAddress) => {
+  const sendFundsToMember = async (value, recipientAddress) => {
     try {
       // Check if MetaMask is installed
       if (typeof window.ethereum !== "undefined") {
-        // Create a provider using the Web3Provider from ethers.js
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        // Get the signer from the provider
-        const signer = provider.getSigner();
-        // Create a contract instance using the CONTRACT_ADDRESS and CONTRACT_ABI
-        const contract = new ethers.Contract(
-          CONTRACT_ADDRESS,
-          CONTRACT_ABI,
-          signer
-        );
-        // Call the sendFunds function on the contract
-        console.log("FUNDS FUNDS FUNDS FUNDS FUNDS FUNDS ");
-        console.log(value);
-        const tx = await contract.sendFundsToMember(ethAddress, {
+        const tx = await contract.sendFundsToMember(recipientAddress, {
           value: ethers.utils.parseEther(value),
         });
         // Wait for the transaction to be mined
@@ -206,23 +170,54 @@ const HomePage = ({ initialAddress }) => {
     }
   };
 
+  const sendFundsToWallet = async (value) => {
+    try {
+      // Check if MetaMask is installed
+      if (typeof window.ethereum !== "undefined") {
+        const tx = await contract.sendFundsToWallet({
+          value: ethers.utils.parseEther(value),
+        });
+        // Wait for the transaction to be mined
+        setIsLoading(true);
+        await tx.wait();
+        getData();
+      } else {
+        // MetaMask is not installed, so show an error message
+        console.log("Please install MetaMask to use this feature");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const withdrawFundsFromWallet = async (value) => {
+    try {
+      // Check if MetaMask is installed
+      if (typeof window.ethereum !== "undefined") {
+        const tx = await contract.withdrawFundsFromWallet(
+          ethers.utils.parseEther(value)
+        );
+        // Wait for the transaction to be mined
+        setIsLoading(true);
+        await tx.wait();
+        console.log("WITHDRAW WITHDRAW WITHDRAW WITHDRAW ");
+        console.log(tx);
+        getData();
+      } else {
+        // MetaMask is not installed, so show an error message
+        console.log("Please install MetaMask to use this feature");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const withdrawMemberFunds = async (value) => {
     try {
       // Check if MetaMask is installed
       if (typeof window.ethereum !== "undefined") {
-        // Create a provider using the Web3Provider from ethers.js
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        // Get the signer from the provider
-        const signer = provider.getSigner();
-        // Create a contract instance using the CONTRACT_ADDRESS and CONTRACT_ABI
-        const contract = new ethers.Contract(
-          CONTRACT_ADDRESS,
-          CONTRACT_ABI,
-          signer
-        );
-        // Call the sendFunds function on the contract
         const tx = await contract.withdrawMemberFunds(
-            ethers.utils.parseEther(value)
+          ethers.utils.parseEther(value)
         );
         // Wait for the transaction to be mined
         setIsLoading(true);
@@ -243,8 +238,6 @@ const HomePage = ({ initialAddress }) => {
     const values = [...userFunds];
     values[index] = e.target.value;
     setUserFunds(values);
-    console.log("LOGS LOGS LOGS LOGS ");
-    console.log(userFunds);
   };
 
   return isLoading ? (
@@ -266,6 +259,18 @@ const HomePage = ({ initialAddress }) => {
             <li>
               <strong>Wallet Balance:</strong>{" "}
               {(walletData.balance / 10 ** 18).toFixed(6)} ETH
+            </li>
+            <li>
+              <button
+                onClick={() => sendFundsToWallet(userFunds[i])}
+              >
+                Send funds
+              </button>
+              <button
+                onClick={() => withdrawFundsFromWallet(userFunds[i])}
+              >
+                Withdraw funds
+              </button>
             </li>
           </ul>
           <h2>Member List</h2>
@@ -320,7 +325,7 @@ const HomePage = ({ initialAddress }) => {
                           </li>
                           <li>
 
-                            {ethAddress == address ?(  <button
+                            {ethAddress == address ? (<button
                               onClick={() =>
                                 withdrawMemberFunds(userFunds[i], address)
                               }
@@ -328,7 +333,7 @@ const HomePage = ({ initialAddress }) => {
                               Withdraw funds
                             </button>) : null}
                             <button
-                              onClick={() => sendFunds(userFunds[i], address)}
+                              onClick={() => sendFundsToMember(userFunds[i], address)}
                             >
                               Send funds
                             </button>

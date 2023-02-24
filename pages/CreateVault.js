@@ -1,21 +1,12 @@
 import React from "react";
 import Link from "next/link";
-import { CONTRACT_ADDRESS, CONTRACT_ABI } from "../global.js";
+import { initializeBlockchain, contract } from "../blockchain";
 import { ethers } from "ethers";
 
 const getWalletData = async (memberAddress, setWalletData) => {
   try {
     const { ethereum } = window;
     if (ethereum) {
-      const provider = new ethers.providers.Web3Provider(ethereum);
-      const signer = provider.getSigner();
-
-      const contract = new ethers.Contract(
-        CONTRACT_ADDRESS,
-        CONTRACT_ABI,
-        signer
-      );
-
       const walletId = await contract.functions.getWalletId(memberAddress);
       const walletOwnerAddress = await contract.functions.getWalletOwner(
         memberAddress
@@ -98,6 +89,7 @@ const CreateVault = ({ initialAddress }) => {
   }, [isMetaMaskAvailable]);
 
   React.useEffect(() => {
+    initializeBlockchain();
     getData();
   }, [ethAddress]);
 
@@ -105,15 +97,7 @@ const CreateVault = ({ initialAddress }) => {
     try {
       const { ethereum } = window;
       if (ethereum) {
-        const provider = new ethers.providers.Web3Provider(ethereum, "any");
-        const signer = provider.getSigner();
-        const theVault = new ethers.Contract(
-          CONTRACT_ADDRESS,
-          CONTRACT_ABI,
-          signer
-        );
-        
-        const vault = await theVault.initializeWallet(
+         const vault = await contract.initializeWallet(
           walletName,
           membersAddresses,
           membersFirstNames,
