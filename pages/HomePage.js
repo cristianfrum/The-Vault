@@ -9,53 +9,53 @@ const getWalletData = async (
   userFunds,
   setUserFunds
 ) => {
-      const walletId = await contract.functions.getWalletId(memberAddress);
-      const walletOwnerAddress = await contract.functions.getWalletOwner(
-        memberAddress
-      );
-      const walletBalance = await contract.functions.getWalletBalance(
-        memberAddress
-      );
-      const walletMembersAddresses =
-        await contract.functions.getWalletMembersAddresses(memberAddress);
-      const walletMembersFirstNames =
-        await contract.functions.getWalletMembersFirstNames(memberAddress);
-      const walletMembersLastNames =
-        await contract.functions.getWalletMembersLastNames(memberAddress);
-      const walletMembersBalances =
-        await contract.functions.getWalletMembersBalances(memberAddress);
-      const walletTransactions = await contract.functions.getWalletTransactions(
-        memberAddress
-      );
+  const walletId = await contract.functions.getWalletId(memberAddress);
+  const walletOwnerAddress = await contract.functions.getWalletOwner(
+    memberAddress
+  );
+  const walletBalance = await contract.functions.getWalletBalance(
+    memberAddress
+  );
+  const walletMembersAddresses =
+    await contract.functions.getWalletMembersAddresses(memberAddress);
+  const walletMembersFirstNames =
+    await contract.functions.getWalletMembersFirstNames(memberAddress);
+  const walletMembersLastNames =
+    await contract.functions.getWalletMembersLastNames(memberAddress);
+  const walletMembersBalances =
+    await contract.functions.getWalletMembersBalances(memberAddress);
+  const walletTransactions = await contract.functions.getWalletTransactions(
+    memberAddress
+  );
 
-      await walletMembersLastNames.wait;
+  await walletMembersLastNames.wait;
 
-      for (let i = 0; i < walletMembersFirstNames.length; i++) {
-        if (i == 0) {
-          setUserFunds("");
-        } else {
-          setUserFunds([...userFunds, ""]);
-        }
-      }
+  for (let i = 0; i < walletMembersFirstNames.length; i++) {
+    if (i == 0) {
+      setUserFunds("");
+    } else {
+      setUserFunds([...userFunds, ""]);
+    }
+  }
 
-      setWalletData({
-        walletId: walletId,
-        ownerAddress: walletOwnerAddress,
-        balance: walletBalance,
-        membersData: walletMembersAddresses.map((address, index) => ({
-          address: address,
-          firstName: walletMembersFirstNames[index],
-          lastName: walletMembersLastNames[index],
-          balance: walletMembersBalances[index],
-        })),
-        transactions: walletTransactions[0].map((tx) => ({
-          date: tx.date,
-          value: tx.value,
-          sender: tx.sender,
-          receiver: tx.receiver,
-          type: tx.txType
-        })),
-      });
+  setWalletData({
+    walletId: walletId,
+    ownerAddress: walletOwnerAddress,
+    balance: walletBalance,
+    membersData: walletMembersAddresses.map((address, index) => ({
+      address: address,
+      firstName: walletMembersFirstNames[index],
+      lastName: walletMembersLastNames[index],
+      balance: walletMembersBalances[index],
+    })),
+    transactions: walletTransactions[0].map((tx) => ({
+      date: tx.date,
+      value: tx.value,
+      sender: tx.sender,
+      receiver: tx.receiver,
+      type: tx.txType
+    })),
+  });
 };
 
 const HomePage = ({ initialAddress }) => {
@@ -67,6 +67,7 @@ const HomePage = ({ initialAddress }) => {
   const [ethAddress, setEthAddress] = React.useState("");
   const [walletData, setWalletData] = React.useState([]);
   const [userFunds, setUserFunds] = React.useState([""]);
+  const [walletFunds, setWalletFunds] = React.useState("");
 
   const createVault = () => {
     router.push({
@@ -195,13 +196,11 @@ const HomePage = ({ initialAddress }) => {
       // Check if MetaMask is installed
       if (typeof window.ethereum !== "undefined") {
         const tx = await contract.withdrawFundsFromWallet(
-          ethers.utils.parseEther(value)
+          ethers.BigNumber.from(ethers.utils.parseEther(value))
         );
         // Wait for the transaction to be mined
         setIsLoading(true);
         await tx.wait();
-        console.log("WITHDRAW WITHDRAW WITHDRAW WITHDRAW ");
-        console.log(tx);
         getData();
       } else {
         // MetaMask is not installed, so show an error message
@@ -216,14 +215,10 @@ const HomePage = ({ initialAddress }) => {
     try {
       // Check if MetaMask is installed
       if (typeof window.ethereum !== "undefined") {
-        const tx = await contract.withdrawMemberFunds(
-          ethers.utils.parseEther(value)
-        );
+        const tx = await contract.withdrawMemberFunds(ethers.BigNumber.from(ethers.utils.parseEther(value)));
         // Wait for the transaction to be mined
         setIsLoading(true);
         await tx.wait();
-        console.log("WITHDRAW WITHDRAW WITHDRAW WITHDRAW ");
-        console.log(tx);
         getData();
       } else {
         // MetaMask is not installed, so show an error message
@@ -238,6 +233,11 @@ const HomePage = ({ initialAddress }) => {
     const values = [...userFunds];
     values[index] = e.target.value;
     setUserFunds(values);
+  };
+
+  const handleWalletFunds = (e) => {
+    console.log("WALLET FUNDS WALLET FUNDS WALLET FUNDS ");
+    setWalletFunds(e.target.value);
   };
 
   return isLoading ? (
@@ -261,13 +261,19 @@ const HomePage = ({ initialAddress }) => {
               {(walletData.balance / 10 ** 18).toFixed(6)} ETH
             </li>
             <li>
+              <input
+                type="number"
+                placeholder=""
+                value={walletFunds}
+                onChange={(e) => handleWalletFunds(e)}
+              />
               <button
-                onClick={() => sendFundsToWallet(userFunds[i])}
+                onClick={() => sendFundsToWallet(walletFunds)}
               >
                 Send funds
               </button>
               <button
-                onClick={() => withdrawFundsFromWallet(userFunds[i])}
+                onClick={() => withdrawFundsFromWallet(walletFunds)}
               >
                 Withdraw funds
               </button>
@@ -318,7 +324,7 @@ const HomePage = ({ initialAddress }) => {
                           <li>
                             <input
                               type="number"
-                              placeholder="..."
+                              placeholder=""
                               value={userFunds[i]}
                               onChange={(e) => handleUserFunds(e, i)}
                             />
