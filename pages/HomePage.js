@@ -13,7 +13,7 @@ const getWalletData = async (
   const walletOwnerAddress = await contract.functions.getWalletOwner(
     memberAddress
   );
-  const walletBalance = await contract.functions.getWalletBalance(
+  const walletPublicFunds = await contract.functions.getWalletPublicFunds(
     memberAddress
   );
   const walletMembersAddresses =
@@ -28,20 +28,16 @@ const getWalletData = async (
     memberAddress
   );
 
-  await walletMembersLastNames.wait;
+  await walletMembersLastNames;
 
-  for (let i = 0; i < walletMembersFirstNames.length; i++) {
-    if (i == 0) {
-      setUserFunds("");
-    } else {
-      setUserFunds([...userFunds, ""]);
-    }
+  for (let i = 0; i < walletMembersAddresses[0].length - 1; i++) {
+    setUserFunds(prevState => [...prevState, ""]);
   }
 
   setWalletData({
     walletId: walletId,
     ownerAddress: walletOwnerAddress,
-    balance: walletBalance,
+    publicFunds: walletPublicFunds,
     membersData: walletMembersAddresses.map((address, index) => ({
       address: address,
       firstName: walletMembersFirstNames[index],
@@ -51,8 +47,8 @@ const getWalletData = async (
     transactions: walletTransactions[0].map((tx) => ({
       date: tx.date,
       value: tx.value,
-      sender: tx.sender,
-      receiver: tx.receiver,
+      sender: tx.senderAddress,
+      receiver: tx.recipientAddress,
       type: tx.txType
     })),
   });
@@ -257,8 +253,8 @@ const HomePage = ({ initialAddress }) => {
               <strong>Owner Address:</strong> {walletData.ownerAddress}
             </li>
             <li>
-              <strong>Wallet Balance:</strong>{" "}
-              {(walletData.balance / 10 ** 18).toFixed(6)} ETH
+              <strong>Wallet Public Funds:</strong>{" "}
+              {(walletData.publicFunds / 10 ** 18).toFixed(6)} ETH
             </li>
             <li>
               <input
@@ -396,6 +392,72 @@ const HomePage = ({ initialAddress }) => {
                         <ul>
                           <li>
                             <strong>Withdraw User to User</strong>
+                          </li>
+                          <li>
+                            <strong>Date:</strong>
+                            {Date(
+                              ethers.BigNumber.from(transaction.date) * 1000
+                            ).toString()}
+                          </li>
+
+                          <li>
+                            <strong>Value:</strong>
+                            {(
+                              ethers.BigNumber.from(
+                                ethers.BigNumber.from(transaction.value)
+                              ) /
+                              10 ** 18
+                            ).toString()}
+                          </li>
+                          <li>
+                            <strong>Sender:</strong>
+                            {transaction.sender}
+                          </li>
+                          <li>
+                            <strong>Receiver:</strong>
+                            {transaction.receiver}
+                          </li>
+                        </ul>
+                      ) : null
+                    }
+                    {
+                      transaction.type == "sendUserToWallet" ? (
+                        <ul>
+                          <li>
+                            <strong>Send User to Wallet</strong>
+                          </li>
+                          <li>
+                            <strong>Date:</strong>
+                            {Date(
+                              ethers.BigNumber.from(transaction.date) * 1000
+                            ).toString()}
+                          </li>
+
+                          <li>
+                            <strong>Value:</strong>
+                            {(
+                              ethers.BigNumber.from(
+                                ethers.BigNumber.from(transaction.value)
+                              ) /
+                              10 ** 18
+                            ).toString()}
+                          </li>
+                          <li>
+                            <strong>Sender:</strong>
+                            {transaction.sender}
+                          </li>
+                          <li>
+                            <strong>Receiver:</strong>
+                            {transaction.receiver}
+                          </li>
+                        </ul>
+                      ) : null
+                    }
+                    {
+                      transaction.type == "withdrawWalletToUser" ? (
+                        <ul>
+                          <li>
+                            <strong>Withdraw Wallet to User</strong>
                           </li>
                           <li>
                             <strong>Date:</strong>
