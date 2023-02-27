@@ -27,6 +27,9 @@ const getWalletData = async (
   const walletTransactions = await contract.functions.getWalletTransactions(
     memberAddress
   );
+  const walletMembersWithdrawalLimits = await contract.functions.getWalletMembersWithdrawalLimits(
+    memberAddress
+  );
 
   await walletMembersLastNames;
 
@@ -43,6 +46,7 @@ const getWalletData = async (
       firstName: walletMembersFirstNames[index],
       lastName: walletMembersLastNames[index],
       balance: walletMembersBalances[index],
+      withdrawalLimit: walletMembersWithdrawalLimits[index]
     })),
     transactions: walletTransactions[0].map((tx) => ({
       date: tx.date,
@@ -63,6 +67,7 @@ const HomePage = ({ initialAddress }) => {
   const [ethAddress, setEthAddress] = React.useState("");
   const [walletData, setWalletData] = React.useState([]);
   const [userFunds, setUserFunds] = React.useState([""]);
+  const [withdrawalLimit, setWithdrawalLimit] = React.useState("");
   const [walletFunds, setWalletFunds] = React.useState("");
 
   const createVault = () => {
@@ -144,6 +149,24 @@ const HomePage = ({ initialAddress }) => {
     setIsLoading(false);
     if (walletData != null) {
       setIsLoading(false);
+    }
+  };
+
+  const changeWithdrawalLimit = async () => {
+    try {
+      // Check if MetaMask is installed
+      if (typeof window.ethereum !== "undefined") {
+        const tx = await contract.setWithdrawalLimit(ethAddress, ethers.utils.parseEther(withdrawalLimit));
+        // Wait for the transaction to be mined
+        setIsLoading(true);
+        await tx.wait();
+        getData();
+      } else {
+        // MetaMask is not installed, so show an error message
+        console.log("Please install MetaMask to use this feature");
+      }
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -231,6 +254,10 @@ const HomePage = ({ initialAddress }) => {
     setUserFunds(values);
   };
 
+  const handleWithdrawalLimit = (e) => {
+    setWithdrawalLimit(e.target.value);
+  }
+  
   const handleWalletFunds = (e) => {
     console.log("WALLET FUNDS WALLET FUNDS WALLET FUNDS ");
     setWalletFunds(e.target.value);
@@ -340,6 +367,44 @@ const HomePage = ({ initialAddress }) => {
                               Send funds
                             </button>
                           </li>
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+            </div>
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              {walletData &&
+                walletData.membersData &&
+                walletData.membersData.map((member, index) => (
+                  <div key={index}>
+                    {member.address.map((address, i) => (
+                      <div key={i}>
+                        <ul>
+                          <li>
+                            <strong>Withdrawal limit:</strong>{" "}
+                            {(
+                              ethers.BigNumber.from(
+                                ethers.BigNumber.from(member.withdrawalLimit[i])
+                              ) /
+                              10 ** 18
+                            ).toString()}
+                          </li>
+                          {ethAddress == address ? (<div><li>
+                            <input
+                              type="number"
+                              placeholder=""
+                              value={withdrawalLimit}
+                              onChange={(e) => handleWithdrawalLimit(e)}
+                            />
+                          </li>
+                          <li>
+                            <button
+                              onClick={() => changeWithdrawalLimit(withdrawalLimit, address)}
+                            >
+                              Set withdrawal limit
+                            </button>
+                          </li></div>) : null}
                         </ul>
                       </div>
                     ))}
@@ -497,8 +562,9 @@ const HomePage = ({ initialAddress }) => {
           <p>You did not join a vault</p>
           <button onClick={createVault}>Create a wallet</button>
         </div>
-      )}
-    </div>
+      )
+      }
+    </div >
   );
 };
 

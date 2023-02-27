@@ -50,6 +50,7 @@ const CreateVault = ({ initialAddress }) => {
   ]);
   const [membersFirstNames, setMembersFirstNames] = React.useState([""]);
   const [membersLastNames, setMembersLastNames] = React.useState([""]);
+  const [membersWithdrawalLimits, setMembersWithdrawalLimits] = React.useState([""]);
   const [walletData, setWalletData] = React.useState([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const isMetaMaskAvailable = typeof window !== "undefined" && window.ethereum;
@@ -97,24 +98,36 @@ const CreateVault = ({ initialAddress }) => {
     try {
       const { ethereum } = window;
       if (ethereum) {
-         const vault = await contract.initializeWallet(
+        console.log("11111111");
+        let auxArray = Array(membersWithdrawalLimits.length);
+        for(let i = 0 ; i < membersWithdrawalLimits.length; i ++){
+          if(membersWithdrawalLimits[i] != "" && membersWithdrawalLimits[i] > 0) {
+            auxArray[i] = ethers.utils.parseEther(membersWithdrawalLimits[i]);
+        console.log(ethers.BigNumber.from(ethers.BigNumber.from(auxArray[i])) / 10 ** 18);
+          }
+        }
+        
+         if(walletBalance != "") {
+           const vault = await contract.initializeWallet(
           walletName,
           membersAddresses,
           membersFirstNames,
           membersLastNames,
+           auxArray,
           {
             value: ethers.utils.parseEther(walletBalance),
           }
         );
-        
+           
         console.log("creating the wallet..");
-        
         setIsLoading(true);
         await vault.wait();
         getData();
         
         console.log("mined ", vault.hash);
         console.log("Wallet created!");
+         }
+        
       }
     } catch (error) {
       console.log(error);
@@ -137,6 +150,7 @@ const CreateVault = ({ initialAddress }) => {
     setMembersAddresses([...membersAddresses, ""]);
     setMembersFirstNames([...membersFirstNames, ""]);
     setMembersLastNames([...membersLastNames, ""]);
+    setMembersWithdrawalLimits([...membersWithdrawalLimits, ""]);
   };
 
   const handleRemoveInput = () => {
@@ -144,7 +158,14 @@ const CreateVault = ({ initialAddress }) => {
       setMembersAddresses(membersAddresses.slice(0, -1));
       setMembersFirstNames(membersFirstNames.slice(0, -1));
       setMembersLastNames(membersLastNames.slice(0, -1));
+    setMembersWithdrawalLimits(membersWithdrawalLimits.slice(0, -1));
     }
+  };
+
+  const handleChangeWithdrawalLimit = (e, index) => {
+    const values = [...membersWithdrawalLimits];
+    values[index] = e.target.value;
+    setMembersWithdrawalLimits(values);
   };
 
   const handleChangeAddresses = (e, index) => {
@@ -218,7 +239,7 @@ const CreateVault = ({ initialAddress }) => {
                   key={index}
                   type="text"
                   placeholder="Type user' first name..."
-                  value={input.value}
+                  value={membersFirstNames[index]}
                   onChange={(e) => handleChangeFirstNames(e, index)}
                 />
               ))}
@@ -229,8 +250,19 @@ const CreateVault = ({ initialAddress }) => {
                   key={index}
                   type="text"
                   placeholder="Type users' last name..."
-                  value={input.value}
+                  value={membersLastNames[index]}
                   onChange={(e) => handleChangeLastNames(e, index)}
+                />
+              ))}
+            </div>
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              {membersWithdrawalLimits.map((input, index) => (
+                <input
+                  key={index}
+                  type="number"
+                  placeholder="Type users' daily withdrawal limit..."
+                  value={membersWithdrawalLimits[index]}
+                  onChange={(e) => handleChangeWithdrawalLimit(e, index)}
                 />
               ))}
             </div>
