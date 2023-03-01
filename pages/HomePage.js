@@ -93,6 +93,7 @@ const HomePage = ({ initialAddress }) => {
       }
     } catch (error) {
       console.log(error);
+      setIsLoading(false);
     }
   };
 
@@ -102,7 +103,7 @@ const HomePage = ({ initialAddress }) => {
 
     window.ethereum.on("accountsChanged", (addresses) => {
       //Disconnecting the last connected account on Metamask redirects the user to the login page
-      if (addresses.length == 0) {
+      if (addresses.length == 0 && (ethAddress == null || ethAddress == "")) {
         router.push("/Login");
       } else {
         //Update the state whenever the address changes
@@ -167,6 +168,7 @@ const HomePage = ({ initialAddress }) => {
       }
     } catch (error) {
       console.log(error);
+      setIsLoading(false);
     }
   };
 
@@ -187,6 +189,7 @@ const HomePage = ({ initialAddress }) => {
       }
     } catch (error) {
       console.log(error);
+      setIsLoading(false);
     }
   };
 
@@ -207,6 +210,7 @@ const HomePage = ({ initialAddress }) => {
       }
     } catch (error) {
       console.log(error);
+      setIsLoading(false);
     }
   };
 
@@ -227,14 +231,24 @@ const HomePage = ({ initialAddress }) => {
       }
     } catch (error) {
       console.log(error);
+      setIsLoading(false);
     }
   };
 
-  const withdrawMemberFunds = async (value) => {
+  const withdrawMemberFunds = async (value, limit) => {
     try {
       // Check if MetaMask is installed
       if (typeof window.ethereum !== "undefined") {
-        const tx = await contract.withdrawMemberFunds(ethers.BigNumber.from(ethers.utils.parseEther(value)));
+
+        const gasLimit = 50000;
+        console.log("LIMIT LIMIT LIMIT LIMIT LIMIT ");
+        console.log(ethers.utils.parseEther(value).toString());
+        console.log(limit.toString());
+        const tx = await contract.withdrawMemberFunds(
+          ethers.BigNumber.from(ethers.utils.parseEther(value)).toString(),
+          limit,
+          { gasLimit }
+        );
         // Wait for the transaction to be mined
         setIsLoading(true);
         await tx.wait();
@@ -245,6 +259,7 @@ const HomePage = ({ initialAddress }) => {
       }
     } catch (error) {
       console.log(error);
+      setIsLoading(false);
     }
   };
 
@@ -254,10 +269,6 @@ const HomePage = ({ initialAddress }) => {
     setUserFunds(values);
   };
 
-  const handleWithdrawalLimit = (e) => {
-    setWithdrawalLimit(e.target.value);
-  }
-  
   const handleWalletFunds = (e) => {
     console.log("WALLET FUNDS WALLET FUNDS WALLET FUNDS ");
     setWalletFunds(e.target.value);
@@ -356,7 +367,7 @@ const HomePage = ({ initialAddress }) => {
 
                             {ethAddress == address ? (<button
                               onClick={() =>
-                                withdrawMemberFunds(userFunds[i], address)
+                                withdrawMemberFunds(userFunds[i], member.withdrawalLimit[i].toString())
                               }
                             >
                               Withdraw funds
@@ -367,20 +378,6 @@ const HomePage = ({ initialAddress }) => {
                               Send funds
                             </button>
                           </li>
-                        </ul>
-                      </div>
-                    ))}
-                  </div>
-                ))}
-            </div>
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              {walletData &&
-                walletData.membersData &&
-                walletData.membersData.map((member, index) => (
-                  <div key={index}>
-                    {member.address.map((address, i) => (
-                      <div key={i}>
-                        <ul>
                           <li>
                             <strong>Withdrawal limit:</strong>{" "}
                             {(
@@ -390,21 +387,6 @@ const HomePage = ({ initialAddress }) => {
                               10 ** 18
                             ).toString()}
                           </li>
-                          {ethAddress == address ? (<div><li>
-                            <input
-                              type="number"
-                              placeholder=""
-                              value={withdrawalLimit}
-                              onChange={(e) => handleWithdrawalLimit(e)}
-                            />
-                          </li>
-                          <li>
-                            <button
-                              onClick={() => changeWithdrawalLimit(withdrawalLimit, address)}
-                            >
-                              Set withdrawal limit
-                            </button>
-                          </li></div>) : null}
                         </ul>
                       </div>
                     ))}

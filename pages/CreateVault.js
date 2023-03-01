@@ -35,7 +35,8 @@ const getWalletData = async (memberAddress, setWalletData) => {
       });
     }
   } catch (error) {
-    console.log(error);
+      console.log(error);
+        setIsLoading(false);
   }
 };
 
@@ -131,6 +132,7 @@ const CreateVault = ({ initialAddress }) => {
       }
     } catch (error) {
       console.log(error);
+        setIsLoading(false);
     }
   };
 

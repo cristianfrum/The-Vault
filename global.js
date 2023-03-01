@@ -1,4 +1,4 @@
 import abi from '/utils/TheVault.json';
 
-export const CONTRACT_ADDRESS = "0xe4cD5EB9bc52EE16E33845BD7Be76A77286d9326";
+export const CONTRACT_ADDRESS = "0x9bf7629299cecdef0611FF3b6f5B7021A1a532b5";
 export const CONTRACT_ABI = abi.abi;
