@@ -22,7 +22,7 @@ const getWalletData = async (memberAddress, setWalletData) => {
         await contract.functions.getWalletMembersLastNames(memberAddress);
 
       await walletMembersLastNames.wait;
-      
+
       setWalletData({
         walletId: walletId,
         ownerAddress: walletOwnerAddress,
@@ -35,8 +35,7 @@ const getWalletData = async (memberAddress, setWalletData) => {
       });
     }
   } catch (error) {
-      console.log(error);
-        setIsLoading(false);
+    console.log(error);
   }
 };
 
@@ -99,40 +98,38 @@ const CreateVault = ({ initialAddress }) => {
     try {
       const { ethereum } = window;
       if (ethereum) {
-        console.log("11111111");
+
         let auxArray = Array(membersWithdrawalLimits.length);
-        for(let i = 0 ; i < membersWithdrawalLimits.length; i ++){
-          if(membersWithdrawalLimits[i] != "" && membersWithdrawalLimits[i] > 0) {
+        for (let i = 0; i < membersWithdrawalLimits.length; i++) {
+          if (membersWithdrawalLimits[i] != "" && membersWithdrawalLimits[i] > 0) {
             auxArray[i] = ethers.utils.parseEther(membersWithdrawalLimits[i]);
-        console.log(ethers.BigNumber.from(ethers.BigNumber.from(auxArray[i])) / 10 ** 18);
           }
         }
-        
-         if(walletBalance != "") {
-           const vault = await contract.initializeWallet(
+
+
+        const vault = await contract.initializeWallet(
           walletName,
           membersAddresses,
           membersFirstNames,
           membersLastNames,
-           auxArray,
+          auxArray,
           {
             value: ethers.utils.parseEther(walletBalance),
           }
         );
-           
+
         console.log("creating the wallet..");
         setIsLoading(true);
         await vault.wait();
         getData();
-        
+
         console.log("mined ", vault.hash);
         console.log("Wallet created!");
-         }
-        
+
       }
     } catch (error) {
       console.log(error);
-        setIsLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -160,7 +157,7 @@ const CreateVault = ({ initialAddress }) => {
       setMembersAddresses(membersAddresses.slice(0, -1));
       setMembersFirstNames(membersFirstNames.slice(0, -1));
       setMembersLastNames(membersLastNames.slice(0, -1));
-    setMembersWithdrawalLimits(membersWithdrawalLimits.slice(0, -1));
+      setMembersWithdrawalLimits(membersWithdrawalLimits.slice(0, -1));
     }
   };
 

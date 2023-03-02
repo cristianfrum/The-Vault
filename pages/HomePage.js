@@ -240,19 +240,22 @@ const HomePage = ({ initialAddress }) => {
       // Check if MetaMask is installed
       if (typeof window.ethereum !== "undefined") {
 
-        const gasLimit = 50000;
-        console.log("LIMIT LIMIT LIMIT LIMIT LIMIT ");
-        console.log(ethers.utils.parseEther(value).toString());
-        console.log(limit.toString());
-        const tx = await contract.withdrawMemberFunds(
+        const gasLimit = 5000000;
+        const enableWithdrawal = await contract.checkWithdrawalLimit(
           ethers.BigNumber.from(ethers.utils.parseEther(value)).toString(),
-          limit,
-          { gasLimit }
+          limit
         );
-        // Wait for the transaction to be mined
-        setIsLoading(true);
-        await tx.wait();
-        getData();
+
+        if (enableWithdrawal == true) {
+          const tx = await contract.withdrawMemberFunds(
+            ethers.BigNumber.from(ethers.utils.parseEther(value)).toString(),
+            { gasLimit }
+          );
+          setIsLoading(true);
+          await tx.wait();
+          // Wait for the transaction to be mined
+          getData();
+        }
       } else {
         // MetaMask is not installed, so show an error message
         console.log("Please install MetaMask to use this feature");
