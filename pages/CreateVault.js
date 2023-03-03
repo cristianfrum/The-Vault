@@ -185,7 +185,8 @@ const CreateVault = ({ initialAddress }) => {
     setMembersLastNames(values);
   };
 
-  return isLoading ? (
+
+        return isLoading ? (
     <h5>"Loading..."</h5>
   ) : (
     <div>
@@ -284,7 +285,7 @@ const CreateVault = ({ initialAddress }) => {
       )}
     </div>
   );
-};
+}
 
 CreateVault.getInitialProps = async ({ query }) => {
   const initialAddress = query.initialAddress || null;

@@ -69,7 +69,8 @@ const HomePage = ({ initialAddress }) => {
   const [userFunds, setUserFunds] = React.useState([""]);
   const [withdrawalLimit, setWithdrawalLimit] = React.useState("");
   const [walletFunds, setWalletFunds] = React.useState("");
-
+  const [showPopup, setShowPopup] = React.useState(false);
+  
   const createVault = () => {
     router.push({
       pathname: "/CreateVault",
@@ -103,7 +104,7 @@ const HomePage = ({ initialAddress }) => {
 
     window.ethereum.on("accountsChanged", (addresses) => {
       //Disconnecting the last connected account on Metamask redirects the user to the login page
-      if (addresses.length == 0 && (ethAddress == null || ethAddress == "")) {
+      if (addresses.length == 0) {
         router.push("/Login");
       } else {
         //Update the state whenever the address changes
@@ -277,10 +278,48 @@ const HomePage = ({ initialAddress }) => {
     setWalletFunds(e.target.value);
   };
 
+  const handleButtonClick = () => {
+    setShowPopup(true);
+  };
+
+  const handleClosePopup = () => {
+    setShowPopup(false);
+  };
+  
   return isLoading ? (
     <h5>"Loading..."</h5>
   ) : (
     <div>
+       <button onClick={handleButtonClick}>Info pop-up!</button>
+      <div className={showPopup ? 'popup-overlay active' : 'popup-overlay'}>
+        {showPopup && (
+          <div className="popup">
+            <div className="popup-inner">
+              <h1>Welcome to the vault!</h1>
+              <p>The vault enables multiple users to join a wallet. Here is the list of the benefits:</p>
+              <ul>
+                <li>Each wallet has public funds that can be withdrawn by each member of the wallet with no limitations.</li>
+                <li>When a wallet is created, it has an owner, members and hourly withdrawal limits set for each member.</li>
+                <li>The wallet enables each member to have its own private ETH storage.</li>
+                <li>Each wallet has a transaction list that displays all the internal and external transactions.</li>
+              </ul>
+              <h2>Use cases:</h2>
+              <ul>
+                <li>A family wants to save some money and set up withdrawal limits for each member, but also share a public fund that is meant to help any member in need.</li>
+                <li>School groups that have a public fund, but each parent wants to make sure that the children do not spend more than allowed.</li>
+              </ul>
+              <h2>Tips:</h2>
+              <ul>
+                <li>Errors are thrown in the console.</li>
+                <li>Access the console by pressing: ctrl + shift + j.</li>
+              </ul>
+              <button className="close-button" onClick={handleClosePopup}>
+                Close
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
       <h1>Your Ethereum address</h1>
       <h5> {ethAddress}</h5>
       {walletData && walletData.walletId != 0 ? (
@@ -318,84 +357,83 @@ const HomePage = ({ initialAddress }) => {
           </ul>
           <h2>Member List</h2>
           <div style={{ display: "flex", flexDirection: "row" }}>
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              {walletData &&
-                walletData.membersData &&
-                walletData.membersData.map((member, index) => (
-                  <div key={index}>
-                    {member.address.map((address, i) => (
-                      <div key={i}>
-                        <ul>
-                          <li>
-                            <strong>Address:</strong> {address}
-                          </li>
-                          <li>
-                            <strong>First Name:</strong> {member.firstName[i]}
-                          </li>
-                          <li>
-                            <strong>Last Name:</strong> {member.lastName[i]}
-                          </li>
-                        </ul>
-                      </div>
-                    ))}
-                  </div>
-                ))}
-            </div>
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              {walletData &&
-                walletData.membersData &&
-                walletData.membersData.map((member, index) => (
-                  <div key={index}>
-                    {member.address.map((address, i) => (
-                      <div key={i}>
-                        <ul>
-                          <li>
-                            <strong>Balance:</strong>{" "}
-                            {(
-                              ethers.BigNumber.from(
-                                ethers.BigNumber.from(member.balance[i])
-                              ) /
-                              10 ** 18
-                            ).toString()}
-                          </li>
-                          <li>
-                            <input
-                              type="number"
-                              placeholder=""
-                              value={userFunds[i]}
-                              onChange={(e) => handleUserFunds(e, i)}
-                            />
-                          </li>
-                          <li>
+            {walletData &&
+              walletData.membersData &&
+              walletData.membersData.map((member, index) => (
+                <div key={index}>
+                  {member.address.map((address, i) => (
+                    <div key={i}>
+                      <ul>
+                        <li>
+                          <strong>Address:</strong> {address}
+                        </li>
+                        <li>
+                          <strong>First Name:</strong> {member.firstName[i]}
+                        </li>
+                        <li>
+                          <strong>Last Name:</strong> {member.lastName[i]}
+                        </li>
 
-                            {ethAddress == address ? (<button
-                              onClick={() =>
-                                withdrawMemberFunds(userFunds[i], member.withdrawalLimit[i].toString())
-                              }
-                            >
-                              Withdraw funds
-                            </button>) : null}
-                            <button
-                              onClick={() => sendFundsToMember(userFunds[i], address)}
-                            >
-                              Send funds
-                            </button>
-                          </li>
-                          <li>
-                            <strong>Withdrawal limit:</strong>{" "}
-                            {(
-                              ethers.BigNumber.from(
-                                ethers.BigNumber.from(member.withdrawalLimit[i])
-                              ) /
-                              10 ** 18
-                            ).toString()}
-                          </li>
-                        </ul>
-                      </div>
-                    ))}
-                  </div>
-                ))}
-            </div>
+                        <li>
+                          <strong>Balance:</strong>{" "}
+                          {(
+                            ethers.BigNumber.from(
+                              ethers.BigNumber.from(member.balance[i])
+                            ) /
+                            10 ** 18
+                          ).toString()}
+                        </li>
+                        <li>
+                          <input
+                            type="number"
+                            placeholder=""
+                            value={userFunds[i]}
+                            onChange={(e) => handleUserFunds(e, i)}
+                          />
+                        </li>
+                        <li>
+
+                          {ethAddress == address ? (<button
+                            onClick={() =>
+                              withdrawMemberFunds(userFunds[i], member.withdrawalLimit[i].toString())
+                            }
+                          >
+                            Withdraw funds
+                          </button>) : null}
+                          <button
+                            onClick={() => sendFundsToMember(userFunds[i], address)}
+                          >
+                            Send funds
+                          </button>
+                        </li>
+                        <li>
+                          <strong>Hourly withdrawal limit:</strong>{" "}
+                          {(
+                            ethers.BigNumber.from(
+                              ethers.BigNumber.from(member.withdrawalLimit[i])
+                            ) /
+                            10 ** 18
+                          ).toString()}
+                        </li>
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              ))}
+          </div>
+          <div style={{ display: "flex", flexDirection: "row" }}>
+            {walletData &&
+              walletData.membersData &&
+              walletData.membersData.map((member, index) => (
+                <div key={index}>
+                  {member.address.map((address, i) => (
+                    <div key={i}>
+                      <ul>
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              ))}
           </div>
           <h2>Transactions</h2>
           <div style={{ display: "flex", flexDirection: "row" }}>
