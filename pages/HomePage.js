@@ -104,7 +104,10 @@ const HomePage = ({ initialAddress }) => {
 
     window.ethereum.on("accountsChanged", (addresses) => {
       //Disconnecting the last connected account on Metamask redirects the user to the login page
-      if (addresses.length == 0) {
+      console.log("LOG LOG LOG LOG LOG LOG LOG ");
+      console.log(addresses);
+      console.log(ethAddress);
+      if (addresses.length == 0 && !ethAddress) {
         router.push("/Login");
       } else {
         //Update the state whenever the address changes
@@ -287,8 +290,10 @@ const HomePage = ({ initialAddress }) => {
   };
   
   return isLoading ? (
-    <h5>"Loading..."</h5>
-  ) : (
+        <div className="loading-spinner-container">
+          <div className="loading-spinner"></div>
+        </div>
+      ) : (
     <div>
        <button onClick={handleButtonClick}>Info pop-up!</button>
       <div className={showPopup ? 'popup-overlay active' : 'popup-overlay'}>
@@ -320,10 +325,10 @@ const HomePage = ({ initialAddress }) => {
           </div>
         )}
       </div>
-      <h1>Your Ethereum address</h1>
-      <h5> {ethAddress}</h5>
       {walletData && walletData.walletId != 0 ? (
         <div>
+      <h1>Your Ethereum address</h1>
+      <h5> {ethAddress}</h5>
           <h2>Wallet Data</h2>
           <ul>
             <li>
@@ -581,10 +586,14 @@ const HomePage = ({ initialAddress }) => {
           <button onClick={leaveWallet}>Leave the wallet</button>
         </div>
       ) : (
-        <div>
-          <p>You did not join a vault</p>
-          <button onClick={createVault}>Create a wallet</button>
-        </div>
+       <div className="container">
+  <div className="message">
+    <h1>Your Ethereum address</h1>
+    <h5>{ethAddress}</h5>
+  <button className="info-btn" onClick={handleButtonClick}>Info Pop-Up</button>
+    <button className="create-btn" onClick={createVault}>Create a wallet</button>
+  </div>
+</div>
       )
       }
     </div >

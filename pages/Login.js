@@ -9,7 +9,6 @@ const LoginPage = () => {
   // Initializing state variables
   const [initialAddress, setInitialAddress] = React.useState(null)
   const [isLoading, setIsLoading] = React.useState(false)
-  const [error, setError] = React.useState(null)
 
   //Check if MetaMask is installed
   const isMetaMaskAvailable = typeof window !== 'undefined' && window.ethereum
@@ -21,15 +20,17 @@ const LoginPage = () => {
 
     //Update the state whenever the address changes
     window.ethereum.on('accountsChanged', async (addresses) => {
-      if(addresses.length != 0) {
+      if (addresses.length != 0) {
         setInitialAddress(util.toChecksumAddress(addresses[0]));
       }
     });
 
-    //Update the state when the user logs in
-    window.ethereum.request({ method: 'eth_requestAccounts' }).then(async (addresses) => {
-      setInitialAddress(util.toChecksumAddress(addresses[0]));
-    })
+    window.ethereum.request({ method: 'eth_accounts' }).then((accounts) => {
+    if (accounts.length > 0) {
+      // Set the initialAddress to the first account in the list
+      setInitialAddress(util.toChecksumAddress(accounts[0]));
+    }
+  });
 
   }, [isMetaMaskAvailable])
 
@@ -51,16 +52,22 @@ const LoginPage = () => {
   };
 
   return (
-    <div>
-      {error && <div>{error}</div>}
-      <div>
-        <div>Please install and sign in with MetaMask</div>
-        <button disabled={isLoading} onClick={handleLogin}>
-          Login
-        </button>
-      </div>
+    <div className="container">
+      {isLoading ? (
+        <div className="loading-spinner-container">
+          <div className="loading-spinner"></div>
+        </div>
+      ) : (
+        <div className="message">
+          <h1>Welcome to The Vault!</h1>
+          <p>To use this app, you need to install and sign in with MetaMask.</p>
+          <button className="login-btn" onClick={handleLogin}>
+            Login with MetaMask
+          </button>
+        </div>
+      )}
     </div>
-  )
+  );
 }
 
 export default LoginPage;

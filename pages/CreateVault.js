@@ -186,102 +186,61 @@ const CreateVault = ({ initialAddress }) => {
   };
 
 
-        return isLoading ? (
-    <h5>"Loading..."</h5>
+  return isLoading ? (
+    <div className="loading-spinner-container">
+      <div className="loading-spinner"></div>
+    </div>
   ) : (
     <div>
       {walletData.walletId != 0 ? (
+        <div className="container">
+          <div className="wallet-card">
+            <h2 className="heading">Can not create a wallet</h2>
+            <p className="paragraph">Sorry, you cannot create a new wallet because you're already a member of another wallet.</p>
+            <div className="button-container">
+              <Link href="/" className="link">
+                <button className="button">Back to Home</button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      ) : (<div class="wallet-card">
+        <h1>Create your wallet</h1>
+        <input type="text" placeholder="Type wallet's name..." value={walletName} onChange={initializeWalletName} />
+        <button onClick={handleAddInput}>Add New Member</button>
+        {membersAddresses.length > 1 ? (<button onClick={handleRemoveInput}>Remove Member</button>) : null}
+        <div class="input-container">
+          <div class="input-wrapper">
+            {membersAddresses.map((input, index) => index == 0 ? (
+              <input key={index} type="text" value={membersAddresses[0]} readOnly />
+            ) : (
+              <input key={index} type="text" placeholder="Type user' address..." value={input.value} onChange={(e) => handleChangeAddresses(e, index)} />
+            ))}
+          </div>
+          <div class="input-wrapper">
+            {membersFirstNames.map((input, index) => (
+              <input key={index} type="text" placeholder="Type user' first name..." value={membersFirstNames[index]} onChange={(e) => handleChangeFirstNames(e, index)} />
+            ))}
+          </div>
+          <div class="input-wrapper">
+            {membersLastNames.map((input, index) => (
+              <input key={index} type="text" placeholder="Type users' last name..." value={membersLastNames[index]} onChange={(e) => handleChangeLastNames(e, index)} />
+            ))}
+          </div>
+          <div class="input-wrapper">
+            {membersWithdrawalLimits.map((input, index) => (
+              <input key={index} type="number" placeholder="Type users' daily withdrawal limit..." value={membersWithdrawalLimits[index]} onChange={(e) => handleChangeWithdrawalLimit(e, index)} />
+            ))}
+          </div>
+        </div>
+        <input type="number" placeholder="Set wallet's balance..." value={walletBalance} onChange={initializeWalletBalance} />
         <div>
-          <p>
-            You can not create a wallet since you're a member of another wallet
-          </p>
+          <button class="create-btn" onClick={createTheWallet}>Create the wallet</button>
           <Link href="/">
-            <button>Go to the home page</button>
+            <button class="homepage-btn">Go to the homepage</button>
           </Link>
         </div>
-      ) : (
-        <div>
-          <h1>Welcome to the Vault</h1>
-          <input
-            type="text"
-            placeholder="Type wallet's name..."
-            value={walletName}
-            onChange={initializeWalletName}
-          />
-          <button onClick={handleAddInput}>Add New Member</button>
-          {
-            membersAddresses.length > 1 ? (<button onClick={handleRemoveInput}>Remove Member</button>) : null
-          }
-          <div style={{ display: "flex", flexDirection: "row" }}>
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              {membersAddresses.map((input, index) =>
-                index == 0 ? (
-                  <input
-                    key={index}
-                    type="text"
-                    value={membersAddresses[0]}
-                    readOnly
-                  />
-                ) : (
-                  <input
-                    key={index}
-                    type="text"
-                    placeholder="Type user' address..."
-                    value={input.value}
-                    onChange={(e) => handleChangeAddresses(e, index)}
-                  />
-                )
-              )}
-            </div>
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              {membersFirstNames.map((input, index) => (
-                <input
-                  key={index}
-                  type="text"
-                  placeholder="Type user' first name..."
-                  value={membersFirstNames[index]}
-                  onChange={(e) => handleChangeFirstNames(e, index)}
-                />
-              ))}
-            </div>
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              {membersLastNames.map((input, index) => (
-                <input
-                  key={index}
-                  type="text"
-                  placeholder="Type users' last name..."
-                  value={membersLastNames[index]}
-                  onChange={(e) => handleChangeLastNames(e, index)}
-                />
-              ))}
-            </div>
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              {membersWithdrawalLimits.map((input, index) => (
-                <input
-                  key={index}
-                  type="number"
-                  placeholder="Type users' daily withdrawal limit..."
-                  value={membersWithdrawalLimits[index]}
-                  onChange={(e) => handleChangeWithdrawalLimit(e, index)}
-                />
-              ))}
-            </div>
-          </div>
-          <input
-            type="number"
-            placeholder="Set wallet's balance..."
-            value={walletBalance}
-            onChange={initializeWalletBalance}
-          />
-          <div>
-            <button onClick={createTheWallet}>Create the wallet</button>
-          </div>
-          <div>
-            <Link href="/">
-              <button>Go to the home page</button>
-            </Link>
-          </div>
-        </div>
+      </div>
       )}
     </div>
   );

@@ -1,7 +1,6 @@
 html,
+
 body {
-  padding: 0;
-  margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
     Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
 }
@@ -67,7 +66,255 @@ li {
   padding: 0.5rem 1rem;
   border: none;
   border-radius: 5px;
-  background-color: #4caf50;
+  background-color: #5c5aff;
   color: white;
   font-size: 1
+}
+
+.close-button:hover {
+  background-color: #0062cc;
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.message {
+  text-align: center;
+}
+
+.login-btn {
+  padding: 12px 24px;
+  background-color: #5c5aff;
+  color: #fff;
+  font-size: 18px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+}
+
+.login-btn:hover {
+  background-color: #0062cc;
+}
+
+.loading-spinner {
+  border: 16px solid #f3f3f3;
+  border-top: 16px solid #5c5aff;
+  border-radius: 50%;
+  width: 120px;
+  height: 120px;
+  animation: spin 2s linear infinite;
+}
+
+.loading-spinner-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center; 
+  height: 100vh;  /* sets the height of the body to the full viewport height */
+}
+
+.create-btn {
+  padding: 12px 24px;
+  background-color: #5c5aff;
+  color: #fff;
+  font-size: 18px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+}
+
+.info-btn {
+  margin-bottom: 20px;
+  padding: 12px 24px;
+  background-color: #f8f9fa;
+  color: #212529;
+  font-size: 18px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.homepage-btn {
+  margin-bottom: 20px;
+  padding: 12px 24px;
+  background-color: #f8f9fa;
+  color: #212529;
+  font-size: 18px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+   padding-top: 12px;
+}
+
+.homepage-btn:hover {
+  background-color: #e9ecef;
+  border-color: #e9ecef;
+  color: #212529;
+}
+
+.info-btn, .create-btn {
+  padding: 12px 24px;
+  font-size: 18px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin: 0 10px; /* Add some margin between the buttons */
+}
+
+.info-btn:hover, .create-btn:hover {
+  background-color: #0062cc;
+}
+
+.card {
+  background-color: #fff;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+  max-width: 500px;
+}
+
+
+.heading {
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 28px;
+}
+
+.paragraph {
+  margin-bottom: 20px;
+  font-size: 18px;
+  padding: 18px;
+}
+
+.button-container {
+  display: flex;
+  justify-content: center;
+}
+
+.button {
+  background-color: #5c5aff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.link {
+  text-decoration: none;
+  display: inline-block;
+}
+
+.input-container {
+  display: flex;
+  flex-direction: row;
+  margin-top: 10px;
+}
+
+.input-wrapper {
+  display: flex;
+  flex-direction: column;
+  margin-right: 20px;
+}
+
+input {
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.wallet-card h2 {
+  color: #333;
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0 0 10px;
+}
+
+.wallet-card h2 {
+  color: #333;
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0 0 10px;
+}
+
+/* Style for the card content */
+.wallet-card p {
+  color: #666;
+  font-size: 16px;
+  margin: 0;
+}
+
+.wallet-card-container {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.wallet-card {
+  background-color: #f5f5f5;
+  border: 1px solid #e5e5e5;
+  border-radius: 5px;
+  box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+  padding: 10px;
+  display: inline-block;
+  text-align: left;
+}
+
+h1 {
+  color: #333;
+  font-size: 36px;
+  font-weight: bold;
+  margin: 0 0 20px;
+  text-align: center;
+}
+
+wallet-div {
+  background-color: #fff;
+  border-radius: 5px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+  margin: 50px auto;
+  padding: 30px;
+  max-width: 800px;
+}
+
+button {
+  padding: 6px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 4px;
+  background-color: #5c5aff;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  margin: 8px;
 }
