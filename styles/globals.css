@@ -127,10 +127,18 @@ li {
 }
 
 body {
-  display: flex;
+  overflow: auto;
   justify-content: center;
   align-items: center; 
   height: 100vh;  /* sets the height of the body to the full viewport height */
+}
+
+.vault-body {
+  overflow: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center; 
+  height: 100vh;
 }
 
 .create-btn {
@@ -194,6 +202,7 @@ body {
   border-radius: 10px;
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
   max-width: 500px;
+  margin: 20px;
 }
 
 

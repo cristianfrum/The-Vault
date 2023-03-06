@@ -82,9 +82,9 @@ const HomePage = ({ initialAddress }) => {
     try {
       const { ethereum } = window;
       if (ethereum) {
-        setIsLoading(true);
         try {
           const execute = await contract.leaveWallet(ethAddress);
+        setIsLoading(true);
           await execute.wait();
           getData();
         } catch (error) {
@@ -295,7 +295,6 @@ const HomePage = ({ initialAddress }) => {
         </div>
       ) : (
     <div>
-       <button onClick={handleButtonClick}>Info pop-up!</button>
       <div className={showPopup ? 'popup-overlay active' : 'popup-overlay'}>
         {showPopup && (
           <div className="popup">
@@ -327,9 +326,11 @@ const HomePage = ({ initialAddress }) => {
       </div>
       {walletData && walletData.walletId != 0 ? (
         <div>
+       <button onClick={handleButtonClick}>Info pop-up</button>
       <h1>Your Ethereum address</h1>
       <h5> {ethAddress}</h5>
           <h2>Wallet Data</h2>
+          <div class = "wallet-card">
           <ul>
             <li>
               <strong>Wallet Id:</strong> {walletData.walletId}
@@ -360,6 +361,7 @@ const HomePage = ({ initialAddress }) => {
               </button>
             </li>
           </ul>
+          </div>
           <h2>Member List</h2>
           <div style={{ display: "flex", flexDirection: "row" }}>
             {walletData &&
@@ -367,7 +369,7 @@ const HomePage = ({ initialAddress }) => {
               walletData.membersData.map((member, index) => (
                 <div key={index}>
                   {member.address.map((address, i) => (
-                    <div key={i}>
+                    <div class = "card"  key={i}>
                       <ul>
                         <li>
                           <strong>Address:</strong> {address}
@@ -384,6 +386,15 @@ const HomePage = ({ initialAddress }) => {
                           {(
                             ethers.BigNumber.from(
                               ethers.BigNumber.from(member.balance[i])
+                            ) /
+                            10 ** 18
+                          ).toString()}
+                        </li>
+                        <li>
+                          <strong>Hourly withdrawal limit:</strong>{" "}
+                          {(
+                            ethers.BigNumber.from(
+                              ethers.BigNumber.from(member.withdrawalLimit[i])
                             ) /
                             10 ** 18
                           ).toString()}
@@ -411,15 +422,6 @@ const HomePage = ({ initialAddress }) => {
                             Send funds
                           </button>
                         </li>
-                        <li>
-                          <strong>Hourly withdrawal limit:</strong>{" "}
-                          {(
-                            ethers.BigNumber.from(
-                              ethers.BigNumber.from(member.withdrawalLimit[i])
-                            ) /
-                            10 ** 18
-                          ).toString()}
-                        </li>
                       </ul>
                     </div>
                   ))}
@@ -440,28 +442,29 @@ const HomePage = ({ initialAddress }) => {
                 </div>
               ))}
           </div>
-          <h2>Transactions</h2>
+          <h2>{walletData &&
+                walletData.transactions && walletData.transactions.length !=0 ? "Transactions" : ""}</h2>
           <div style={{ display: "flex", flexDirection: "row" }}>
             <div style={{ display: "flex", flexDirection: "column" }}>
               {walletData &&
                 walletData.transactions &&
                 walletData.transactions.map((transaction, index) => (
-                  <div key={index}>
+                  <div class ="card"  key={index}>
                     {
                       transaction.type == "sendUserToUser" ? (
                         <ul>
                           <li>
-                            <strong>Send User to User</strong>
+                            <strong>Sent from user to user</strong>
                           </li>
                           <li>
-                            <strong>Date:</strong>
+                            <strong>Date: </strong>
                             {Date(
                               ethers.BigNumber.from(transaction.date) * 1000
                             ).toString()}
                           </li>
 
                           <li>
-                            <strong>Value:</strong>
+                            <strong>Value: </strong>
                             {(
                               ethers.BigNumber.from(
                                 ethers.BigNumber.from(transaction.value)
@@ -470,11 +473,11 @@ const HomePage = ({ initialAddress }) => {
                             ).toString()}
                           </li>
                           <li>
-                            <strong>Sender:</strong>
+                            <strong>Sender: </strong>
                             {transaction.sender}
                           </li>
                           <li>
-                            <strong>Receiver:</strong>
+                            <strong>Recipient: </strong>
                             {transaction.receiver}
                           </li>
                         </ul>
@@ -484,10 +487,10 @@ const HomePage = ({ initialAddress }) => {
                       transaction.type == "withdrawUserToUser" ? (
                         <ul>
                           <li>
-                            <strong>Withdraw User to User</strong>
+                            <strong>Withdrawn from user to user</strong>
                           </li>
                           <li>
-                            <strong>Date:</strong>
+                            <strong>Date: </strong>
                             {Date(
                               ethers.BigNumber.from(transaction.date) * 1000
                             ).toString()}
@@ -517,7 +520,7 @@ const HomePage = ({ initialAddress }) => {
                       transaction.type == "sendUserToWallet" ? (
                         <ul>
                           <li>
-                            <strong>Send User to Wallet</strong>
+                            <strong>Sent from user to wallet</strong>
                           </li>
                           <li>
                             <strong>Date:</strong>
@@ -550,7 +553,7 @@ const HomePage = ({ initialAddress }) => {
                       transaction.type == "withdrawWalletToUser" ? (
                         <ul>
                           <li>
-                            <strong>Withdraw Wallet to User</strong>
+                            <strong>Withdrawn from wallet to user</strong>
                           </li>
                           <li>
                             <strong>Date:</strong>
@@ -589,7 +592,7 @@ const HomePage = ({ initialAddress }) => {
        <div className="container">
   <div className="message">
     <h1>Your Ethereum address</h1>
-    <h5>{ethAddress}</h5>
+    <h3>{ethAddress}</h3>
   <button className="info-btn" onClick={handleButtonClick}>Info Pop-Up</button>
     <button className="create-btn" onClick={createVault}>Create a wallet</button>
   </div>

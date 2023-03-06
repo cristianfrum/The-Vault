@@ -1,0 +1,9 @@
+body {
+  overflow: auto;
+  display: flex;
+  height: 100vh;  /* sets the height of the body to the full viewport height */
+}
+
+.content {
+  margin: auto;
+}

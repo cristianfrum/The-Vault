@@ -190,7 +190,27 @@ const CreateVault = ({ initialAddress }) => {
     <div className="loading-spinner-container">
       <div className="loading-spinner"></div>
     </div>
-  ) : (
+  ) : (  <div>
+    <head>
+      <title>My Page Title</title>
+      <link rel="stylesheet" type="text/css" href="createvault.css" />
+    </head>
+    <body>
+      <div class = "vault-body">
+    <div>
+      {walletData.walletId != 0 ? (
+        <div className="container">
+          <div className="wallet-card">
+            <h2 className="heading">Can not create a wallet</h2>
+            <p className="paragraph">Sorry, you cannot create a new wallet because you're already a member of another wallet.</p>
+            <div className="button-container">
+              <Link href="/" className="link">
+                <button className="button">Back to Home</button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      ) : (
     <div>
       {walletData.walletId != 0 ? (
         <div className="container">
@@ -243,6 +263,11 @@ const CreateVault = ({ initialAddress }) => {
       </div>
       )}
     </div>
+      )}
+    </div>
+      </div>
+    </body>
+  </div>
   );
 }
 
