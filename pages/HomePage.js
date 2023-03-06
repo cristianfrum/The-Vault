@@ -70,7 +70,7 @@ const HomePage = ({ initialAddress }) => {
   const [withdrawalLimit, setWithdrawalLimit] = React.useState("");
   const [walletFunds, setWalletFunds] = React.useState("");
   const [showPopup, setShowPopup] = React.useState(false);
-  
+
   const createVault = () => {
     router.push({
       pathname: "/CreateVault",
@@ -84,7 +84,7 @@ const HomePage = ({ initialAddress }) => {
       if (ethereum) {
         try {
           const execute = await contract.leaveWallet(ethAddress);
-        setIsLoading(true);
+          setIsLoading(true);
           await execute.wait();
           getData();
         } catch (error) {
@@ -104,9 +104,6 @@ const HomePage = ({ initialAddress }) => {
 
     window.ethereum.on("accountsChanged", (addresses) => {
       //Disconnecting the last connected account on Metamask redirects the user to the login page
-      console.log("LOG LOG LOG LOG LOG LOG LOG ");
-      console.log(addresses);
-      console.log(ethAddress);
       if (addresses.length == 0 && !ethAddress) {
         router.push("/Login");
       } else {
@@ -277,7 +274,6 @@ const HomePage = ({ initialAddress }) => {
   };
 
   const handleWalletFunds = (e) => {
-    console.log("WALLET FUNDS WALLET FUNDS WALLET FUNDS ");
     setWalletFunds(e.target.value);
   };
 
@@ -288,12 +284,12 @@ const HomePage = ({ initialAddress }) => {
   const handleClosePopup = () => {
     setShowPopup(false);
   };
-  
+
   return isLoading ? (
-        <div className="loading-spinner-container">
-          <div className="loading-spinner"></div>
-        </div>
-      ) : (
+    <div className="loading-spinner-container">
+      <div className="loading-spinner"></div>
+    </div>
+  ) : (
     <div>
       <div className={showPopup ? 'popup-overlay active' : 'popup-overlay'}>
         {showPopup && (
@@ -326,41 +322,41 @@ const HomePage = ({ initialAddress }) => {
       </div>
       {walletData && walletData.walletId != 0 ? (
         <div>
-       <button onClick={handleButtonClick}>Info pop-up</button>
-      <h1>Your Ethereum address</h1>
-      <h5> {ethAddress}</h5>
+          <button onClick={handleButtonClick}>Info pop-up</button>
+          <h1>Your Ethereum address</h1>
+          <h5> {ethAddress}</h5>
           <h2>Wallet Data</h2>
-          <div class = "wallet-card">
-          <ul>
-            <li>
-              <strong>Wallet Id:</strong> {walletData.walletId}
-            </li>
-            <li>
-              <strong>Owner Address:</strong> {walletData.ownerAddress}
-            </li>
-            <li>
-              <strong>Wallet Public Funds:</strong>{" "}
-              {(walletData.publicFunds / 10 ** 18).toFixed(6)} ETH
-            </li>
-            <li>
-              <input
-                type="number"
-                placeholder=""
-                value={walletFunds}
-                onChange={(e) => handleWalletFunds(e)}
-              />
-              <button
-                onClick={() => sendFundsToWallet(walletFunds)}
-              >
-                Send funds
-              </button>
-              <button
-                onClick={() => withdrawFundsFromWallet(walletFunds)}
-              >
-                Withdraw funds
-              </button>
-            </li>
-          </ul>
+          <div class="wallet-card">
+            <ul>
+              <li>
+                <strong>Wallet Id:</strong> {walletData.walletId}
+              </li>
+              <li>
+                <strong>Owner Address:</strong> {walletData.ownerAddress}
+              </li>
+              <li>
+                <strong>Wallet Public Funds:</strong>{" "}
+                {(walletData.publicFunds / 10 ** 18).toFixed(6)} ETH
+              </li>
+              <li>
+                <input
+                  type="number"
+                  placeholder=""
+                  value={walletFunds}
+                  onChange={(e) => handleWalletFunds(e)}
+                />
+                <button
+                  onClick={() => sendFundsToWallet(walletFunds)}
+                >
+                  Send funds
+                </button>
+                <button
+                  onClick={() => withdrawFundsFromWallet(walletFunds)}
+                >
+                  Withdraw funds
+                </button>
+              </li>
+            </ul>
           </div>
           <h2>Member List</h2>
           <div style={{ display: "flex", flexDirection: "row" }}>
@@ -369,7 +365,7 @@ const HomePage = ({ initialAddress }) => {
               walletData.membersData.map((member, index) => (
                 <div key={index}>
                   {member.address.map((address, i) => (
-                    <div class = "card"  key={i}>
+                    <div class="card" key={i}>
                       <ul>
                         <li>
                           <strong>Address:</strong> {address}
@@ -443,13 +439,13 @@ const HomePage = ({ initialAddress }) => {
               ))}
           </div>
           <h2>{walletData &&
-                walletData.transactions && walletData.transactions.length !=0 ? "Transactions" : ""}</h2>
+            walletData.transactions && walletData.transactions.length != 0 ? "Transactions" : ""}</h2>
           <div style={{ display: "flex", flexDirection: "row" }}>
             <div style={{ display: "flex", flexDirection: "column" }}>
               {walletData &&
                 walletData.transactions &&
                 walletData.transactions.map((transaction, index) => (
-                  <div class ="card"  key={index}>
+                  <div class="card" key={index}>
                     {
                       transaction.type == "sendUserToUser" ? (
                         <ul>
@@ -589,14 +585,14 @@ const HomePage = ({ initialAddress }) => {
           <button onClick={leaveWallet}>Leave the wallet</button>
         </div>
       ) : (
-       <div className="container">
-  <div className="message">
-    <h1>Your Ethereum address</h1>
-    <h3>{ethAddress}</h3>
-  <button className="info-btn" onClick={handleButtonClick}>Info Pop-Up</button>
-    <button className="create-btn" onClick={createVault}>Create a wallet</button>
-  </div>
-</div>
+        <div className="container">
+          <div className="message">
+            <h1>Your Ethereum address</h1>
+            <h3>{ethAddress}</h3>
+            <button className="info-btn" onClick={handleButtonClick}>Info Pop-Up</button>
+            <button className="create-btn" onClick={createVault}>Create a wallet</button>
+          </div>
+        </div>
       )
       }
     </div >
